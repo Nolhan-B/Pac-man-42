@@ -29,19 +29,29 @@ class ConfigLoader:
     Example:
         loader = ConfigLoader("config.json")
         loader.load()
-        lives = loader.config["lives"]
+        lives = loader.lives
     """
 
     def __init__(self, filepath: str) -> None:
         self.filepath = filepath
-        self.config: dict[str, Any] = {}
+        # les attributs sont initialises avec les defauts,
+        # puis ecrases par load() si le fichier est valide
+        self.highscore_filename: str = DEFAULTS["highscore_filename"]
+        self.lives: int = DEFAULTS["lives"]
+        self.pacgum: int = DEFAULTS["pacgum"]
+        self.points_per_pacgum: int = DEFAULTS["points_per_pacgum"]
+        self.points_per_super_pacgum: int = DEFAULTS["points_per_super_pacgum"]
+        self.points_per_ghost: int = DEFAULTS["points_per_ghost"]
+        self.seed: int = DEFAULTS["seed"]
+        self.level_max_time: int = DEFAULTS["level_max_time"]
+        self.levels: list[dict[str, Any]] = list(DEFAULTS["levels"])
 
     def load(self) -> None:
         """Point d'entree principal, appelle les etapes dans l'ordre."""
         raw_content = self._read_file()
         clean_content = self._strip_comments(raw_content)
         raw_config = self._parse_json(clean_content)
-        self.config = self._validate(raw_config)
+        self._validate(raw_config)
 
     # --- Etape 1 : lecture du fichier ---
 
@@ -69,10 +79,10 @@ class ConfigLoader:
                 lines.append(line)
         return "\n".join(lines)
 
-    # parsning json
+    # parsing json
 
     def _parse_json(self, content: str) -> dict[str, Any]:
-        # parse le JSON sans commenatires, si c'est pas du JSON valide ou
+        # parse le JSON sans commentaires, si c'est pas du JSON valide ou
         # pas un objet (genre une liste), on exit avec un message clair.
         try:
             raw = json.loads(content)
@@ -86,31 +96,29 @@ class ConfigLoader:
 
         return raw
 
-    # ensuite validation cle par cle
+    # validation cle par cle
 
-    def _validate(self, raw: dict[str, Any]) -> dict[str, Any]:
-        # on valide chaque cle connue
-        # Les cles inconnues sont ignorees automatiquement ducoup
-        config: dict[str, Any] = {}
-
-        config["highscore_filename"] = self._clamp(
+    def _validate(self, raw: dict[str, Any]) -> None:
+        # on valide chaque cle connue et on assigne direct sur self
+        # les cles inconnues sont ignorees automatiquement
+        self.highscore_filename = self._clamp(
             raw.get("highscore_filename", DEFAULTS["highscore_filename"]),
             str, None, None,
             "highscore_filename", DEFAULTS["highscore_filename"]
         )
-        config["lives"] = self._clamp(
+        self.lives = self._clamp(
             raw.get("lives", DEFAULTS["lives"]),
             int, 1, 10, "lives", DEFAULTS["lives"]
         )
-        config["pacgum"] = self._clamp(
+        self.pacgum = self._clamp(
             raw.get("pacgum", DEFAULTS["pacgum"]),
             int, 1, 1000, "pacgum", DEFAULTS["pacgum"]
         )
-        config["points_per_pacgum"] = self._clamp(
+        self.points_per_pacgum = self._clamp(
             raw.get("points_per_pacgum", DEFAULTS["points_per_pacgum"]),
             int, 0, 10000, "points_per_pacgum", DEFAULTS["points_per_pacgum"]
         )
-        config["points_per_super_pacgum"] = self._clamp(
+        self.points_per_super_pacgum = self._clamp(
             raw.get(
                 "points_per_super_pacgum",
                 DEFAULTS["points_per_super_pacgum"]
@@ -118,21 +126,19 @@ class ConfigLoader:
             int, 0, 10000,
             "points_per_super_pacgum", DEFAULTS["points_per_super_pacgum"]
         )
-        config["points_per_ghost"] = self._clamp(
+        self.points_per_ghost = self._clamp(
             raw.get("points_per_ghost", DEFAULTS["points_per_ghost"]),
             int, 0, 10000, "points_per_ghost", DEFAULTS["points_per_ghost"]
         )
-        config["seed"] = self._clamp(
+        self.seed = self._clamp(
             raw.get("seed", DEFAULTS["seed"]),
             int, 0, 2**32 - 1, "seed", DEFAULTS["seed"]
         )
-        config["level_max_time"] = self._clamp(
+        self.level_max_time = self._clamp(
             raw.get("level_max_time", DEFAULTS["level_max_time"]),
             int, 10, 600, "level_max_time", DEFAULTS["level_max_time"]
         )
-        config["levels"] = self._parse_levels(raw.get("levels"))
-
-        return config
+        self.levels = self._parse_levels(raw.get("levels"))
 
     # les helpers
 
@@ -145,8 +151,8 @@ class ConfigLoader:
         key: str,
         default: Any
     ) -> Any:
-        # Check que la valeur soit du bon type et dans les bornes.
-        # Si c'est invalide, on log un warning et on retourne le defaut.
+        # check que la valeur soit du bon type et dans les bornes.
+        # si c'est invalide, on log un warning et on retourne le defaut.
         if not isinstance(value, expected_type):
             logger.warning(
                 "Config '%s' : attendu %s, recu %s. Defaut: %s",
@@ -171,8 +177,8 @@ class ConfigLoader:
         return value
 
     def _parse_level(self, raw_level: Any, index: int) -> dict[str, Any]:
-        # Valide un niveau individuel (width + height).
-        # Si c'est pas un dict, on retourne le niveau par defaut.
+        # valide un niveau individuel (width + height).
+        # si c'est pas un dict, on retourne le niveau par defaut.
         default_level = DEFAULTS["levels"][0]
 
         if not isinstance(raw_level, dict):
@@ -207,10 +213,9 @@ class ConfigLoader:
 
         return {"width": width, "height": height}
 
-    #Jai fais avec des dict pour linstant mais on va vite le transformer pour avoir une class
-    # un truc du genre LevelModel ou LevelConfig
+    # a refactorer plus tard avec une vraie classe LevelConfig
     def _parse_levels(self, raw: Any) -> list[dict[str, Any]]:
-        # Parse la liste des levels, le sujet en demande 10,
+        # parse la liste des levels, le sujet en demande 10,
         # donc si c'est trop court on complete avec le niveau par defaut.
         min_levels = 10
         default_level = DEFAULTS["levels"][0]
