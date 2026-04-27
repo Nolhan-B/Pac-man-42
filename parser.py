@@ -216,7 +216,8 @@ class ConfigLoader:
     # a refactorer plus tard avec une vraie classe LevelConfig
     def _parse_levels(self, raw: Any) -> list[dict[str, Any]]:
         # parse la liste des levels, le sujet en demande 10,
-        # donc si c'est trop court on complete avec le niveau par defaut.
+        # donc si c'est trop court on complete avec
+        #  le niveau par defaut.
         min_levels = 10
         default_level = DEFAULTS["levels"][0]
 
