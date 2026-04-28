@@ -1,6 +1,7 @@
 from parser import ConfigLoader
 import logging
-logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger(__name__)
+
 
 class Player:
     def __init__(self, config: ConfigLoader) -> None:
@@ -12,7 +13,7 @@ class Player:
     def _init_player_pos(self, maze_size_x: int, maze_size_y: int) -> None:
         self._pos_x = maze_size_x // 2
         self._pos_y = maze_size_y // 2
-    
+
     def move_up(self) -> None:
         self._pos_y += 1
 
@@ -28,7 +29,7 @@ class Player:
     def set_position(self, x: int, y: int) -> None:
         self._pos_x = x
         self._pos_y = y
-    
+
     def get_position(self) -> tuple[int, int]:
         return (self._pos_x, self._pos_y)
 

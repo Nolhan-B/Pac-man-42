@@ -10,7 +10,7 @@ class PlayerScore:
     score: int
 
     def __post_init__(self) -> None:
-        if not all(c.isalnum() or c == ' ' for c in self.name)
+        if not all(c.isalnum() or c == ' ' for c in self.name):
             raise ValueError("PlayerScore's name can't contain"
                              " non-alnum characters!")
         if len(self.name) > 10:
@@ -20,6 +20,7 @@ class PlayerScore:
 
         if not isinstance(self.score, int) or self.score < 0:
             raise ValueError(f"Score must be a positive integer! (got :{self.score})")
+
 
 class HighscoreManager:
     def __init__(self, filepath: str) -> None:
@@ -64,4 +65,3 @@ class HighscoreManager:
                 json.dump([asdict(s) for s in self.scores], f, indent=4)
         except (PermissionError, OSError) as e:
             logger.warning(f"Can not save players' scores : {e}")
-
