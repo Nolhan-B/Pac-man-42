@@ -1,6 +1,7 @@
 from parser import ConfigLoader
 from generate_level import Level
 from ghost import Ghost
+from player import Player
 
 
 class Engine():
@@ -28,19 +29,51 @@ class Engine():
         self._spawn_ghosts()
 
     def _spawn_ghosts(self):
-
         w = self.current_level.width
         h = self.current_level.height
 
         self.ghosts.clear()
-        # Coin Haut-Gauche
-        self.ghosts.append(Ghost("rouge", 0, 0))
-        # Coin Haut-Droit
-        self.ghosts.append(Ghost("bleu", w - 1, 0))
-        # Coin Bas-Gauche
-        self.ghosts.append(Ghost("vert", 0, h - 1))
-        # Coin Bas-Droit
-        self.ghosts.append(Ghost("violet", w - 1, h - 1))
+        # On spawn a(x, y) et enregistre le spawn (x, y) pour le mode DEAD
+        # Haut-Gauche
+        self.ghosts.append(Ghost("red", 1, 1, self, (1, 1)))
+        # Haut-Droit
+        self.ghosts.append(Ghost("blue", w - 2, 1, self, (w - 2, 1)))
+        # Bas-Gauche
+        self.ghosts.append(Ghost("green", 1, h - 2, self, (1, h - 2)))
+        # Bas-Droit
+        self.ghosts.append(Ghost("purple", w - 2, h - 2, self, (w - 2, h - 2)))
 
-    def _check_pac_gum(self):
+    def take_pac_gum(self) -> None:
+        y: int = self.player.get_pos_y()
+        x: int = self.player.get_pos_x()
+        type_gum: str = self.level.check_and_eat_gum(y, x)
+        self._process_gum(type_gum)
+
+    def _process_gum(self, type_gum: str) -> None:
+        if type_gum == "SUPER":
+            self.player.add_score(self.config.point_per_super_pacgum)
+            self.level.total_gum -= 1
+            self._check_win()
+            for ghost in self.ghosts:
+                ghost.force_u_turn()
+                
+        elif type_gum == "NORMAL":
+            self.player.add_score(self.config.points_per_pacgum)
+            self.level.total_gum -= 1
+            self._check_win()
+        elif type_gum == "NONE":
+            return
+
+    def _check_win(self) -> None:
+        # Condition de Victoire
+        if self.level.total_gum == 0:
+            print("Niveau Terminé !")
+            self.next_level()
+
+    def _check_loose(self) -> None:
+        # Condition de Défaite
+        if self.player.lives <= 0:
+            print("Game Over...")
+            self.is_running = False  # Pour arrêter la boucle de jeu
+
 

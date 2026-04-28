@@ -28,7 +28,6 @@ class HighscoreManager:
         self._load()
 
     # ici on cherche a charger le fichier des highscores
-    # 
     def _load(self) -> None:
         try:
             with open(self.filepath, 'r', encoding="utf-8") as f:
