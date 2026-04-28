@@ -65,3 +65,4 @@ class HighscoreManager:
                 json.dump([asdict(s) for s in self.scores], f, indent=4)
         except (PermissionError, OSError) as e:
             logger.warning(f"Can not save players' scores : {e}")
+
