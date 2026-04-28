@@ -1,3 +1,7 @@
+from parser import ConfigLoader
+import logging
+logging.basicConfig(level=logging.WARNING)
+
 class Player:
 	def __init__(self, config: ConfigLoader) -> None:
 		self.lives = config.lives
