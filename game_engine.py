@@ -41,3 +41,6 @@ class Engine():
         self.ghosts.append(Ghost("vert", 0, h - 1))
         # Coin Bas-Droit
         self.ghosts.append(Ghost("violet", w - 1, h - 1))
+
+    def _check_pac_gum(self):
+

@@ -31,25 +31,31 @@ class Ghost():
         self.spawn = spawn
         self.pos_y = pos_y
         self.pos_x = pos_x
-        self.state = State.CHASE
+        self._state = State.CHASE
         self.direction = None
         self.speed = 1.0
         self.engine = engine
 
     def set_state(self, new_state: State):
-        self.state = new_state
+        self._state = new_state
+
+    def force_u_turn(self):
+        # On inverse la direction actuelle
+        if self.direction in Direction.OPPOSITES:
+            self.direction = Direction.OPPOSITES[self.direction]
+        self.set_state(State.FRIGHTENED)
 
     def move(self, layout: list[list[int]], target_pos: tuple[int, int]):
         possible = []
         possible = self._get_possible_direction(layout)
 
-        if self.state == State.CHASE:
+        if self._state == State.CHASE:
             move = self._chase_pac_man(possible)
 
-        elif self.state == State.FRIGHTENED:
+        elif self._state == State.FRIGHTENED:
             move = random.choice(possible)
 
-        elif self.state == State.DEAD:
+        elif self._state == State.DEAD:
             move = self._respawn(possible)
 
         # Met a jour la direction et la position
@@ -63,14 +69,17 @@ class Ghost():
         elif move == Direction.WEST:
             self.pos_x -= 1
         # Si on atteinyt le spawn on repasse en chase
-        if self.state == State.DEAD and (self.pos_x, self.pos_y) == self.spawn:
+        if (
+            self._state == State.DEAD
+            and (self.pos_x, self.pos_y) == self._spawn
+        ):
             self.set_state(State.CHASE)
 
     @property
     def current_speed(self):
-        if self.state == State.FRIGHTENED:
+        if self._state == State.FRIGHTENED:
             return self.speed * 0.5
-        if self.state == State.DEAD:
+        if self._state == State.DEAD:
             return self.speed * 2.0
         return self.speed
 
@@ -96,14 +105,14 @@ class Ghost():
             possible.append(Direction.WEST)
 
         forbidden = Direction.OPPOSITES.get(self.direction)
-        if forbidden in possible and len(possible) > 1 and (self.state !=
+        if forbidden in possible and len(possible) > 1 and (self._state !=
                                                             State.FRIGHTENED):
             possible.remove(forbidden)
 
         return possible
 
     def _chase_pac_man(self, possible):
-        target: tuple = (self.engine.player.pos_x, self.engine.player.pos_y)
+        target: tuple = self.engine.player.get_position
         move = self._get_direction(target, possible)
         return move
 
