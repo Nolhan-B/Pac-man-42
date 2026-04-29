@@ -1,15 +1,7 @@
-from ghost import Direction
+from constants import Direction
 from parser import ConfigLoader
 import logging
 logger = logging.getLogger(__name__)
-
-
-OPPOSITES = {
-    Direction.NORTH: Direction.SOUTH,
-    Direction.SOUTH: Direction.NORTH,
-    Direction.EAST: Direction.WEST,
-    Direction.WEST: Direction.EAST
-    }
 
 
 class Player:
@@ -109,7 +101,7 @@ class Player:
                 self.current_direction = self.next_direction
             #  On vérifie si on peut avancer dans la direction actuelle
             if self._can_move(self.current_direction, layout):
-                self._execute_move(self.current_direction)
+                self._execute_move()
                 self.move_timer = 0.0
             else:
                 # On bute contre un mur, on attend une nouvelle direction

@@ -3,7 +3,8 @@ import sys
 from parser import ConfigLoader
 from generate_level import Level
 import pygame
-
+from player import Player
+from game_engine import Engine
 logging.basicConfig(level=logging.WARNING)
 
 
@@ -27,6 +28,11 @@ def main() -> None:
     screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
     clock = pygame.time.Clock()
     font = pygame.font.SysFont("Arial", 80)
+
+    player = Player(config)
+    engine = Engine(1, config, player)
+    engine.load_level(1) # Charge le premier niveau
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

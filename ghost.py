@@ -1,32 +1,15 @@
-from enum import Enum, auto
-from game_engine import Engine
+
+from typing import TYPE_CHECKING
 import random
+from constants import Direction, State, OPPOSITES
 
-
-class State(Enum):
-    CHASE = auto()
-    FRIGHTENED = auto()
-    DEAD = auto()
-
-
-class Direction(Enum):
-    NORTH = auto()
-    EAST = auto()
-    SOUTH = auto()
-    WEST = auto()
-
-
-OPPOSITES = {
-    Direction.NORTH: Direction.SOUTH,
-    Direction.SOUTH: Direction.NORTH,
-    Direction.EAST: Direction.WEST,
-    Direction.WEST: Direction.EAST
-    }
+if TYPE_CHECKING:
+    from game_engine import Engine
 
 
 class Ghost():
     def __init__(self, color: str, pos_y: int, pos_x: int,
-                 engine: Engine, spawn: tuple):
+                 engine: "Engine", spawn: tuple):
         self.color = color
         self._spawn = spawn
         self.pos_y = pos_y
@@ -34,7 +17,7 @@ class Ghost():
         self._state = State.CHASE
         self.direction = None
         self.speed: float = 1.0
-        self.engine: Engine = engine
+        self.engine: "Engine" = engine
         self.move_timer: float = 0.0
         self.frightened_timer: int = 0
 

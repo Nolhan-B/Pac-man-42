@@ -1,6 +1,7 @@
 from parser import ConfigLoader
 from generate_level import Level
-from ghost import Ghost, State
+from ghost import Ghost
+from constants import State
 from player import Player
 
 
