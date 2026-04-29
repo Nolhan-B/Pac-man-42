@@ -112,4 +112,15 @@ class Engine():
             self.player.add_score(self.config.points_per_ghost)
             ghost.set_state(State.DEAD)
 
+    def run(self) -> None:
+        if not self.running or self.is_paused:
+            return
+
+        if self.invincibility_timer > 0:
+            self.invincibility_timer -= 1
+        self.take_pac_gum()
+        self._check_collisions()
+        for ghost in self.ghosts:
+            ghost.move()
+
 
