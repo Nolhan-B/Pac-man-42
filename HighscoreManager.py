@@ -4,6 +4,7 @@ import json
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class PlayerScore:
     name: str

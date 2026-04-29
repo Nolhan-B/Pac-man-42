@@ -11,6 +11,7 @@ OPPOSITES = {
     Direction.WEST: Direction.EAST
     }
 
+
 class Player:
     def __init__(self, config: ConfigLoader) -> None:
         self.lives = config.lives
@@ -113,5 +114,3 @@ class Player:
             else:
                 # On bute contre un mur, on attend une nouvelle direction
                 self.move_timer = 0.0
-
-        
