@@ -31,13 +31,27 @@ def main() -> None:
 
     player = Player(config)
     engine = Engine(1, config, player)
-    engine.load_level(1) # Charge le premier niveau
+    engine.load_level(1)  # Charge le premier niveau
 
     while True:
+        #
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            # Implementation des controles
+            if event.type == pygame.KEYDOWN:
+                from constants import Direction
+                if event.key == pygame.K_UP:
+                    player.set_next_direction(Direction.NORTH)
+                elif event.key == pygame.K_DOWN:
+                    player.set_next_direction(Direction.SOUTH)
+                elif event.key == pygame.K_LEFT:
+                    player.set_next_direction(Direction.WEST)
+                elif event.key == pygame.K_RIGHT:
+                    player.set_next_direction(Direction.EAST)
+        # Lancement du moteur de jeu    
+        engine.run()
 
         screen.fill((0, 0, 0))
         text = font.render("PAC-MAN", True, (255, 255, 0))
