@@ -65,7 +65,7 @@ class Engine():
             self._check_win()
             for ghost in self.ghosts:
                 ghost.force_u_turn()
-                
+
         elif type_gum == "NORMAL":
             self.player.add_score(self.config.points_per_pacgum)
             self.current_level.total_gum -= 1
@@ -118,9 +118,9 @@ class Engine():
 
         if self.invincibility_timer > 0:
             self.invincibility_timer -= 1
-        self.take_pac_gum()
-        self._check_collisions()
+        layout = self.current_level.layout
+        self.player.update_player(layout)
         for ghost in self.ghosts:
             ghost.move()
-
-
+        self.take_pac_gum()
+        self._check_collisions()
