@@ -39,6 +39,9 @@ class Ghost():
     def set_state(self, new_state: State):
         self._state = new_state
 
+    def get_position(self) -> tuple[int, int]:
+        return (self._pos_x, self._pos_y)
+
     def force_u_turn(self):
         # On inverse la direction actuelle
         if self.direction in Direction.OPPOSITES:
