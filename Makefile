@@ -3,7 +3,7 @@ PYTHON      = python3
 VENV        = venv
 PIP         = $(VENV)/bin/pip
 PY          = $(VENV)/bin/python
-MAIN        = pac-man.py
+MAIN        = MON_RENDUGRAPHIQUEPROPREETPASDEGUELASSECOEMMETOI.py
 CONFIG      = config.json
 
 # Couleurs

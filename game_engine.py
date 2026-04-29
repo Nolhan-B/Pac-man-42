@@ -103,7 +103,7 @@ class Engine():
                 self._handle_collision(ghost)
 
     def _handle_collision(self, ghost: "Ghost") -> None:
-        if ghost.state == State.CHASE:
+        if ghost._state == State.CHASE:
             if self.invincibility_timer <= 0:
                 self.invincibility_timer = 180
                 self.player.lose_life()
@@ -122,6 +122,6 @@ class Engine():
         layout = self.current_level.layout
         self.player.update_player(layout)
         for ghost in self.ghosts:
-            ghost.move()
+            ghost.ghost_update()
         self.take_pac_gum()
         self._check_collisions()
