@@ -1,11 +1,13 @@
 import pygame
 from constants import Direction
 import sys
+import logging
 from player import Player
 from game_engine import Engine
 from parser import ConfigLoader
 from generate_level import Level
 
+logger = logging.getLogger(__name__)
 
 class Renderer:
     def __init__(self, screen, config):
@@ -19,7 +21,10 @@ class Renderer:
         try:
             self.pacman_sprite = pygame.image.load("assets/pacman.png").convert_alpha()
         # Si elle n'existe pas, on crée un carré jaune de secours pour éviter le crash
-        except FileNotFoundError:
+        except Exception:
+            logger.warning("pacman sprite not loaded, "
+                           "using yellow rect instead.")
+
             self.pacman_sprite = pygame.Surface((30, 30))
             self.pacman_sprite.fill((255, 255, 0))
 

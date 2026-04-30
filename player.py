@@ -51,6 +51,7 @@ class Player:
         if self.lives == 0:
             logger.warning("Player can't lose life, already at 0 !")
         else:
+            # logger.warning("Player justst lost a life!")
             self.lives -= 1
 
     def set_next_direction(self, direction: Direction) -> None:
