@@ -109,7 +109,7 @@ class Engine():
                 self.player.lose_life()
                 self._check_loose()
 
-        elif ghost.state == State.FRIGHTENED:
+        elif ghost._state == State.FRIGHTENED:
             self.player.add_score(self.config.points_per_ghost)
             ghost.set_state(State.DEAD)
 

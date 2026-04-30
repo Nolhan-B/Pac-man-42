@@ -127,12 +127,44 @@ class Renderer:
             pygame.draw.circle(self.screen, gum_color, center, 8)
 
     def draw_ghost(self, ghost):
-        # On récupère la position
+        # 1. Récupération de la position logique (la destination)
         gx, gy = ghost.get_position()
+        offset_x, offset_y = 0, 0
+        
+        # 2. Calcul du lissage si le fantôme est en mouvement
+        if ghost.direction is not None:
+            # On calcule la progression (0.0 à 1.0)
+            # ghost.move_timer augmente de 0 à 30.0
+            progress = ghost.move_timer / 30.0
+            progress = min(1.0, progress) # Sécurité pour les vitesses DEAD rapides
+            
+            # Distance qu'il reste à parcourir visuellement (30px -> 0px)
+            dist_restante = self.c_s * (1.0 - progress)
+            
+            # On repousse le dessin dans la direction OPPOSÉE au mouvement
+            if ghost.direction == Direction.NORTH:
+                offset_y = dist_restante
+            elif ghost.direction == Direction.SOUTH:
+                offset_y = -dist_restante
+            elif ghost.direction == Direction.WEST:
+                offset_x = dist_restante
+            elif ghost.direction == Direction.EAST:
+                offset_x = -dist_restante
 
-        pixel_x = gx * self.c_s + (self.side_margin // 2) + (self.c_s // 2)
-        pixel_y = gy * self.c_s + self.header + (self.c_s // 2)
-        pygame.draw.circle(self.screen, ghost.color, (int(pixel_x), int(pixel_y)), self.c_s // 2.5)
+        # 3. Calcul des coordonnées finales en pixels
+        # On centre le cercle dans la case (+ c_s // 2)[cite: 6]
+        px = gx * self.c_s + (self.side_margin // 2) + (self.c_s // 2) + offset_x
+        py = gy * self.c_s + self.header + (self.c_s // 2) + offset_y
+        
+        # 4. Dessin du fantôme avec sa couleur propre[cite: 4, 6]
+        pygame.draw.circle(self.screen, ghost.color, (int(px), int(py)), self.c_s // 2.5)
+    # def draw_ghost(self, ghost):
+    #     # On récupère la position
+    #     gx, gy = ghost.get_position()
+
+    #     pixel_x = gx * self.c_s + (self.side_margin // 2) + (self.c_s // 2)
+    #     pixel_y = gy * self.c_s + self.header + (self.c_s // 2)
+    #     pygame.draw.circle(self.screen, ghost.color, (int(pixel_x), int(pixel_y)), self.c_s // 2.5)
 
 def main():
     if len(sys.argv) != 2:

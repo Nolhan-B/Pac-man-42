@@ -1,4 +1,4 @@
-from constants import Direction
+from constants import Direction, OPPOSITES
 from parser import ConfigLoader
 import logging
 logger = logging.getLogger(__name__)
@@ -93,16 +93,41 @@ class Player:
         return False
 
     def update_player(self, layout: list[list[int]]) -> None:
+        # 1. Le Demi-Tour sécurisé (Zéro passe-muraille)
+        if self.current_direction and self.next_direction == OPPOSITES.get(self.current_direction):
+            # On recule de manière fluide UNIQUEMENT si on n'était pas bloqué contre un mur
+            if self.move_timer > 0 and self._can_move(self.current_direction, layout):
+                self._execute_move()
+                self.move_timer = 30.0 - self.move_timer
+            else:
+                # Si on était bloqué (timer à 0), on pivote juste sur place
+                self.move_timer = 0.0
+                
+            self.current_direction = self.next_direction
+            self.next_direction = None
+            return
+
         self.move_timer += 1.0
-        time_to_move = 30.0
-        if self.move_timer >= time_to_move:
-            #  On essaye de tourner vers la direction demandée (next_dir)
+        
+        if self.move_timer >= 30.0:
+            if self.current_direction and self._can_move(self.current_direction, layout):
+                self._execute_move()
+
             if self._can_move(self.next_direction, layout):
                 self.current_direction = self.next_direction
-            #  On vérifie si on peut avancer dans la direction actuelle
-            if self._can_move(self.current_direction, layout):
-                self._execute_move()
-                self.move_timer = 0.0
-            else:
-                # On bute contre un mur, on attend une nouvelle direction
-                self.move_timer = 0.0
+
+            self.move_timer = 0.0
+    # def update_player(self, layout: list[list[int]]) -> None:
+    #     self.move_timer += 1.0
+    #     time_to_move = 30.0
+    #     if self.move_timer >= time_to_move:
+    #         #  On essaye de tourner vers la direction demandée (next_dir)
+    #         if self._can_move(self.next_direction, layout):
+    #             self.current_direction = self.next_direction
+    #         #  On vérifie si on peut avancer dans la direction actuelle
+    #         if self._can_move(self.current_direction, layout):
+    #             self._execute_move()
+    #             self.move_timer = 0.0
+    #         else:
+    #             # On bute contre un mur, on attend une nouvelle direction
+    #             self.move_timer = 0.0
