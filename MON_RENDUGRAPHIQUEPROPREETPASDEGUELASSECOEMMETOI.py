@@ -15,8 +15,13 @@ class Renderer:
         self.footer = 75
         self.side_margin = 150
         self.c_s = 0
-        self.pacman_sprite = (pygame.image
-                              .load("assets/pacman.png").convert_alpha())
+        # On essaie de charger la vraie image
+        try:
+            self.pacman_sprite = pygame.image.load("assets/pacman.png").convert_alpha()
+        # Si elle n'existe pas, on crée un carré jaune de secours pour éviter le crash
+        except FileNotFoundError:
+            self.pacman_sprite = pygame.Surface((30, 30))
+            self.pacman_sprite.fill((255, 255, 0))
 
     def draw_all(self, engine):
         # Remplir de noir
@@ -32,32 +37,44 @@ class Renderer:
         for ghost in engine.ghosts:
             self.draw_ghost(ghost)
 
-        self.draw_pac_man(engine.player)
+        self.draw_pac_man(engine.player, engine.current_level.layout)
 
         # Affichage du resultat et rafraichissement du rendu
         pygame.display.flip()
 
-    def draw_pac_man(self, player):
+    def draw_pac_man(self, player, layout):
         px, py = player.get_position()
-        # On redimmensionne l'image a la taille d'une case
+        if px is None:
+            return
+
+        offset_x, offset_y = 0, 0
+        
+        # On glisse en avant UNIQUEMENT si le moteur autorise le mouvement
+        if player.current_direction is not None and player._can_move(player.current_direction, layout):
+            progress = player.move_timer / 30.0
+            
+            if player.current_direction == Direction.NORTH: offset_y = -progress * self.c_s
+            elif player.current_direction == Direction.SOUTH: offset_y = progress * self.c_s
+            elif player.current_direction == Direction.WEST: offset_x = -progress * self.c_s
+            elif player.current_direction == Direction.EAST: offset_x = progress * self.c_s
+
         sprite_resized = pygame.transform.smoothscale(
             self.pacman_sprite, (self.c_s, self.c_s))
 
         rotations = {
-            Direction.EAST: 0,
-            Direction.NORTH: 90,
-            Direction.WEST: 180,
-            Direction.SOUTH: 270
+            Direction.EAST: 0, Direction.NORTH: 90, 
+            Direction.WEST: 180, Direction.SOUTH: 270
         }
 
         angle = rotations.get(player.current_direction, 0)
         sprite_final = pygame.transform.rotate(sprite_resized, angle)
 
-        pixel_x = px * self.c_s + (self.side_margin // 2)
-        pixel_y = py * self.c_s + self.header
-        # methode de pygame pour tamponner l'image a l'ecran
+        #  On applique l'offset calculé
+        pixel_x = px * self.c_s + (self.side_margin // 2) + offset_x
+        pixel_y = py * self.c_s + self.header + offset_y
+        
         self.screen.blit(sprite_final, (pixel_x, pixel_y))
-  
+
     def _draw_maze(self, layout):
         # On parcourt chaque case du labyrinthe
         for y, row in enumerate(layout):
@@ -115,18 +132,7 @@ class Renderer:
 
         pixel_x = gx * self.c_s + (self.side_margin // 2) + (self.c_s // 2)
         pixel_y = gy * self.c_s + self.header + (self.c_s // 2)
-        pygame.draw.circle(self.screen, ghost.color, (pixel_x, pixel_y), self.c_s // 2.5)
-        
-
-
-
-
-
-
-
-
-
-
+        pygame.draw.circle(self.screen, ghost.color, (int(pixel_x), int(pixel_y)), self.c_s // 2.5)
 
 def main():
     if len(sys.argv) != 2:
@@ -137,17 +143,21 @@ def main():
     config = ConfigLoader(sys.argv[1])
     config.load()
 
-    # Creation de la fenetre
-    pygame.init()
-    screen = pygame.display.set_mode((1200, 900))
-
-    renderer = Renderer(screen, config)
     player = Player(config)
-    engine = Engine(1, config, player)
-    engine.load_level(1)
+    engine = Engine(0, config, player)
+    engine.load_level(0)
 
     # Definition de la taille des cases selon la taille du niveau
-    renderer.c_s = 1200 // engine.current_level.width
+    C_S = 30
+    WINDOW_W = (engine.current_level.width * C_S) + 150
+    WINDOW_H = (engine.current_level.height * C_S) + 150 + 75
+
+    # Creation de la fenetre
+    pygame.init()
+    screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+
+    renderer = Renderer(screen, config)
+    renderer.c_s = C_S
 
     clock = pygame.time.Clock()
 
@@ -175,7 +185,6 @@ def main():
         renderer.draw_all(engine)
 
         clock.tick(60)
-
 
 if __name__ == "__main__":
     main()
