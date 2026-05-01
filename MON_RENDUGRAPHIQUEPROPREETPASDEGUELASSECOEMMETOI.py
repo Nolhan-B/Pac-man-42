@@ -1,10 +1,10 @@
 import pygame
-from constants import Direction
+from constants import Direction, GameState
 import sys
 import logging
 from player import Player
 from game_engine import Engine
-from config_parser import ConfigLoader
+from parser import ConfigLoader
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +17,9 @@ class Renderer:
         self.footer = 75
         self.side_margin = 150
         self.c_s = 0
-        # font init doit etre appele avant SysFont,
-        # et pygame.init() doit avoir tourne avant
         pygame.font.init()
         self.font = pygame.font.SysFont("Arial", 24)
+        self.font_big = pygame.font.SysFont("Arial", 80, bold=True)
         try:
             self.pacman_sprite = pygame.image.load(
                 "assets/pacman.png"
@@ -32,14 +31,51 @@ class Renderer:
             self.pacman_sprite = pygame.Surface((30, 30))
             self.pacman_sprite.fill((255, 255, 0))
 
-    def draw_all(self, engine, window_w):
+    def draw_all(self, engine, window_w, game_state, countdown):
         self.screen.fill((0, 0, 0))
         self._draw_maze(engine.current_level.layout)
         for ghost in engine.ghosts:
             self.draw_ghost(ghost)
         self.draw_pac_man(engine.player, engine.current_level.layout)
         self._draw_hud(engine, window_w)
+
+        # overlay selon l'etat du jeu
+        if game_state == GameState.COUNTDOWN:
+            self._draw_countdown(countdown, window_w)
+        elif game_state == GameState.GAME_OVER:
+            self._draw_game_over(window_w)
+
         pygame.display.flip()
+
+    def _draw_countdown(self, countdown, window_w):
+        # overlay sombre semi-transparent
+        overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 140))
+        self.screen.blit(overlay, (0, 0))
+
+        # le chiffre au centre
+        label = str(countdown) if countdown > 0 else "GO !"
+        text = self.font_big.render(label, True, (255, 220, 0))
+        x = (window_w - text.get_width()) // 2
+        y = (self.screen.get_height() - text.get_height()) // 2
+        self.screen.blit(text, (x, y))
+
+    def _draw_game_over(self, window_w):
+        overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 160))
+        self.screen.blit(overlay, (0, 0))
+
+        text = self.font_big.render("GAME OVER", True, (255, 50, 50))
+        x = (window_w - text.get_width()) // 2
+        y = (self.screen.get_height() - text.get_height()) // 2
+        self.screen.blit(text, (x, y))
+
+        sub = self.font.render(
+            "Appuie sur ENTREE pour quitter", True, (255, 255, 255)
+        )
+        self.screen.blit(
+            sub, ((window_w - sub.get_width()) // 2, y + 100)
+        )
 
     def draw_pac_man(self, player, layout):
         px, py = player.get_position()
@@ -153,7 +189,6 @@ class Renderer:
         )
 
     def _draw_hud(self, engine: Engine, window_w: int) -> None:
-        # footer commence apres le labyrinthe
         footer_y = (
             self.header + engine.current_level.height * self.c_s + 10
         )
@@ -218,23 +253,49 @@ def main():
 
     clock = pygame.time.Clock()
 
+    # --- game state ---
+    game_state = GameState.COUNTDOWN
+    countdown = 3       # chiffre affiche : 3, 2, 1, GO
+    frame_timer = 0     # compte les frames, 60 frames = 1 seconde
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    player.set_next_direction(Direction.NORTH)
-                elif event.key == pygame.K_DOWN:
-                    player.set_next_direction(Direction.SOUTH)
-                elif event.key == pygame.K_LEFT:
-                    player.set_next_direction(Direction.WEST)
-                elif event.key == pygame.K_RIGHT:
-                    player.set_next_direction(Direction.EAST)
+                if game_state == GameState.GAME_OVER:
+                    if event.key == pygame.K_RETURN:
+                        pygame.quit()
+                        sys.exit()
+                if game_state == GameState.PLAYING:
+                    if event.key == pygame.K_UP:
+                        player.set_next_direction(Direction.NORTH)
+                    elif event.key == pygame.K_DOWN:
+                        player.set_next_direction(Direction.SOUTH)
+                    elif event.key == pygame.K_LEFT:
+                        player.set_next_direction(Direction.WEST)
+                    elif event.key == pygame.K_RIGHT:
+                        player.set_next_direction(Direction.EAST)
 
-        engine.run()
-        renderer.draw_all(engine, WINDOW_W)
+        # logique selon l'etat
+        if game_state == GameState.COUNTDOWN:
+            frame_timer += 1
+            # toutes les 60 frames (1 sec) on decremente
+            if frame_timer >= 60:
+                frame_timer = 0
+                countdown -= 1
+            # countdown a -1 : le "GO!" a ete affiche, on passe en jeu
+            if countdown < 0:
+                game_state = GameState.PLAYING
+
+        elif game_state == GameState.PLAYING:
+            engine.run()
+            # si l'engine a stoppe (game over), on change d'etat
+            if not engine.running:
+                game_state = GameState.GAME_OVER
+
+        renderer.draw_all(engine, WINDOW_W, game_state, countdown)
         clock.tick(60)
 
 
