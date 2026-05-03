@@ -4,7 +4,7 @@ import sys
 import logging
 from player import Player
 from game_engine import Engine
-from config_parser import ConfigLoader
+from parser import ConfigLoader
 
 logger = logging.getLogger(__name__)
 
