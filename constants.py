@@ -10,6 +10,7 @@ class GameState(Enum):
     COUNTDOWN = auto()
     PLAYING = auto()
     GAME_OVER = auto()
+    MENU = auto()
 
 class Direction(Enum):
     NORTH = auto()
