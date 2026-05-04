@@ -22,8 +22,8 @@
     # levels[4] : niveau vide -> width et height tombent sur le defaut
     # levels[5] a [9] : valides, juste pour atteindre les 10 niveaux requis
     "levels": [
+        {"width": 10, "height": 10},
         {"width": 21, "height": 21},
-        {"width": 7, "height": 7},
         {"width": 20, "height": 21},
         {"width": 21, "height": -10},
         {"width": "grosse_erreur", "height": "aussi"},

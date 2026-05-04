@@ -15,7 +15,6 @@ class Renderer:
         self.config = config
         self.header: int = 150
         self.footer: int = 75
-        self.side_margin: int = 150
         self.c_s: int = 0
         pygame.font.init()
         self.font: pygame.font.Font = pygame.font.SysFont("Arial", 24)
@@ -34,6 +33,20 @@ class Renderer:
             self.pacman_sprite = pygame.Surface((30, 30))
             self.pacman_sprite.fill((255, 255, 0))
 
+    def _get_maze_offset(self, engine: Engine, window_w: int) -> tuple[int, int]:
+        available_w = window_w
+        available_h = self.screen.get_height() - self.header - self.footer
+        # C_S s'adapte a la taille du level en cours
+        self.c_s = min(
+            available_w // engine.current_level.width,
+            available_h // engine.current_level.height
+        )
+        maze_px_w = engine.current_level.width * self.c_s
+        maze_px_h = engine.current_level.height * self.c_s
+        ox = (window_w - maze_px_w) // 2
+        oy = self.header + (available_h - maze_px_h) // 2
+        return ox, oy
+
     def draw_all(
         self,
         engine: Engine,
@@ -42,10 +55,14 @@ class Renderer:
         countdown: int
     ) -> None:
         self.screen.fill((0, 0, 0))
-        self._draw_maze(engine.current_level.layout)
+
+        # offset calcule une seule fois, passe a tous les draws
+        ox, oy = self._get_maze_offset(engine, window_w)
+
+        self._draw_maze(engine.current_level.layout, ox, oy)
         for ghost in engine.ghosts:
-            self.draw_ghost(ghost)
-        self.draw_pac_man(engine.player, engine.current_level.layout)
+            self.draw_ghost(ghost, ox, oy)
+        self.draw_pac_man(engine.player, engine.current_level.layout, ox, oy)
         self._draw_hud(engine, window_w)
 
         if game_state == GameState.COUNTDOWN:
@@ -127,7 +144,11 @@ class Renderer:
         )
 
     def draw_pac_man(
-        self, player: Player, layout: list[list[int]]
+        self,
+        player: Player,
+        layout: list[list[int]],
+        maze_ox: int,
+        maze_oy: int
     ) -> None:
         px, py = player.get_position()
         if px is None:
@@ -163,15 +184,17 @@ class Renderer:
             sprite_resized, angle
         )
 
-        pixel_x: float = px * self.c_s + (self.side_margin // 2) + offset_x
-        pixel_y: float = py * self.c_s + self.header + offset_y
+        pixel_x: float = px * self.c_s + maze_ox + offset_x
+        pixel_y: float = py * self.c_s + maze_oy + offset_y
         self.screen.blit(sprite_final, (pixel_x, pixel_y))
 
-    def _draw_maze(self, layout: list[list[int]]) -> None:
+    def _draw_maze(
+        self, layout: list[list[int]], maze_ox: int, maze_oy: int
+    ) -> None:
         for y, row in enumerate(layout):
             for x, cell in enumerate(row):
-                ox: int = x * self.c_s + (self.side_margin // 2)
-                oy: int = y * self.c_s + self.header
+                ox: int = x * self.c_s + maze_ox
+                oy: int = y * self.c_s + maze_oy
                 self._draw_walls(ox, oy, cell)
                 self._draw_items(ox, oy, cell)
 
@@ -215,7 +238,9 @@ class Renderer:
         if cell & 32:
             pygame.draw.circle(self.screen, gum_color, center, 8)
 
-    def draw_ghost(self, ghost: "Ghost") -> None:  # type: ignore
+    def draw_ghost(
+        self, ghost: "Ghost", maze_ox: int, maze_oy: int  # type: ignore
+    ) -> None:
         gx, gy = ghost.get_position()
         offset_x: float = 0
         offset_y: float = 0
@@ -233,15 +258,8 @@ class Renderer:
             elif ghost.direction == Direction.EAST:
                 offset_x = -dist_restante
 
-        px: float = (
-            gx * self.c_s
-            + (self.side_margin // 2)
-            + (self.c_s // 2)
-            + offset_x
-        )
-        py: float = (
-            gy * self.c_s + self.header + (self.c_s // 2) + offset_y
-        )
+        px: float = gx * self.c_s + maze_ox + (self.c_s // 2) + offset_x
+        py: float = gy * self.c_s + maze_oy + (self.c_s // 2) + offset_y
         pygame.draw.circle(
             self.screen, ghost.color,
             (int(px), int(py)), self.c_s // 2.5
@@ -249,7 +267,7 @@ class Renderer:
 
     def _draw_hud(self, engine: Engine, window_w: int) -> None:
         footer_y: int = (
-            self.header + engine.current_level.height * self.c_s + 10
+            self.screen.get_height() - self.footer + 10
         )
 
         score_text: pygame.Surface = self.font.render(
@@ -307,8 +325,10 @@ def main() -> None:
     player, engine = _reset_game(config)
 
     C_S: int = 30
-    WINDOW_W: int = (engine.current_level.width * C_S) + 150
-    WINDOW_H: int = (engine.current_level.height * C_S) + 150 + 75
+    max_w: int = max(lvl["width"] for lvl in config.levels)
+    max_h: int = max(lvl["height"] for lvl in config.levels)
+    WINDOW_W: int = max_w * C_S + 150
+    WINDOW_H: int = max_h * C_S + 150 + 75
 
     pygame.init()
     screen: pygame.Surface = pygame.display.set_mode((WINDOW_W, WINDOW_H))
