@@ -84,7 +84,8 @@ class Renderer:
         engine: Engine,
         window_w: int,
         game_state: GameState,
-        countdown: int
+        countdown: int,
+        show_cheats: bool
     ) -> None:
         self.screen.fill((0, 0, 0))
 
@@ -96,6 +97,9 @@ class Renderer:
             self.draw_ghost(ghost, ox, oy)
         self.draw_pac_man(engine.player, engine.current_level.layout, ox, oy)
         self._draw_hud(engine, window_w)
+
+        if show_cheats is True:
+            self._draw_cheats_overlay()
 
         if game_state == GameState.COUNTDOWN:
             self._draw_countdown(countdown, window_w)
@@ -383,6 +387,30 @@ class Renderer:
             )
         )
 
+    def _draw_cheats_overlay(self) -> None:
+        overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+        self.screen.blit(overlay, (0, 0))
+
+        cheats = [
+            "CHEATS",
+            "",
+            "I  → Invincible",
+            "F  → Freeze ghosts",
+            "S  → Speed",
+            "N  → Next level",
+            "V  → +1 Life",
+            "",
+            "TAB → Fermer"
+        ]
+
+        for i, line in enumerate(cheats):
+            font = self.font_big if i == 0 else self.font
+            text = font.render(line, True, (255, 255, 255))
+            x = (self.screen.get_width() - text.get_width()) // 2
+            y = 150 + i * 40
+            self.screen.blit(text, (x, y))
+
 
 def _reset_game(config: ConfigLoader) -> tuple[Player, Engine]:
     # recrée un player et un engine tout frais pour une nouvelle partie
@@ -420,6 +448,12 @@ def main() -> None:
     menu_selection: int = 0
     countdown: int = 3
     frame_timer: int = 0
+    show_cheats: bool = False
+    cheats = {
+        "invincible": False,
+        "freeze": False,
+        "speed": False,
+    }
 
     while True:
         for event in pygame.event.get():
@@ -447,7 +481,25 @@ def main() -> None:
                             sys.exit()
 
                 elif game_state == GameState.PLAYING:
-                    if event.key == pygame.K_UP:
+                    if event.key == pygame.K_TAB:
+                        show_cheats = not show_cheats
+
+                    elif event.key == pygame.K_i:
+                        cheats["invincible"] = not cheats["invincible"]
+
+                    elif event.key == pygame.K_f:
+                        cheats["freeze"] = not cheats["freeze"]
+
+                    elif event.key == pygame.K_s:
+                        cheats["speed"] = not cheats["speed"]
+
+                    elif event.key == pygame.K_n:
+                        engine.load_level(engine.level_id + 1)
+
+                    elif event.key == pygame.K_v:
+                        player.lives += 1
+
+                    elif event.key == pygame.K_UP:
                         player.set_next_direction(Direction.NORTH)
                     elif event.key == pygame.K_DOWN:
                         player.set_next_direction(Direction.SOUTH)
@@ -470,16 +522,34 @@ def main() -> None:
                 countdown -= 1
             if countdown < 0:
                 game_state = GameState.PLAYING
-            renderer.draw_all(engine, WINDOW_W, game_state, countdown)
+            renderer.draw_all(engine, WINDOW_W, game_state, countdown, show_cheats)
 
         elif game_state == GameState.PLAYING:
+            # Invincible
+            if cheats["invincible"]:
+                engine.cheat_invincible = True
+            else:
+                engine.cheat_invincible = False
+
+            # Speed
+            if cheats["speed"]:
+                engine.cheat_speed = True
+            else:
+                engine.cheat_speed = False
+
+            # Freeze ghosts
+            if cheats["freeze"]:
+                engine.cheat_freeze = True
+            else:
+                engine.cheat_freeze = False
+
             engine.run()
             if not engine.running:
                 game_state = GameState.GAME_OVER
-            renderer.draw_all(engine, WINDOW_W, game_state, countdown)
+            renderer.draw_all(engine, WINDOW_W, game_state, countdown, show_cheats)
 
         elif game_state == GameState.GAME_OVER:
-            renderer.draw_all(engine, WINDOW_W, game_state, countdown)
+            renderer.draw_all(engine, WINDOW_W, game_state, countdown, show_cheats)
 
         clock.tick(60)
 
