@@ -362,6 +362,9 @@ class Renderer:
         total: int = total_width + spacing * 2
         start_x: int = (window_w - total) // 2
 
+        hint = self.font.render("TAB : afficher les raccourcis", True, (50, 50, 50))
+        self.screen.blit(hint, (10, 10))
+
         self.screen.blit(score_text, (start_x, footer_y))
         self.screen.blit(
             lives_text,
