@@ -1,5 +1,5 @@
 import pygame
-from constants import Direction, GameState
+from constants import Direction, GameState, State
 import sys
 import logging
 from player import Player
@@ -16,6 +16,8 @@ class Renderer:
         self.header: int = 150
         self.footer: int = 75
         self.c_s: int = 0
+        self.ghost_sprites = {}
+        ghost_list = ["red", "blue", "yellow", "pink"]
         pygame.font.init()
         self.font: pygame.font.Font = pygame.font.SysFont("Arial", 24)
         self.font_big: pygame.font.Font = pygame.font.SysFont(
@@ -32,8 +34,38 @@ class Renderer:
             )
             self.pacman_sprite = pygame.Surface((30, 30))
             self.pacman_sprite.fill((255, 255, 0))
+        for color in ghost_list:
+            try:
+                img = pygame.image.load(
+                    f"assets/ghost_{color}.png").convert_alpha()
+                self.ghost_sprites[color] = img
+            except Exception:
+                logger.warning(
+                    "Ghost sprite not loaded, using default instead."
+                )
+                surf = pygame.Surface((30, 30))
+                surf.fill(pygame.Color(color))
+                self.ghost_sprites[color] = surf
+        try:
+            self.ghost_sprites["frightened"] = (
+                pygame.image.load("assets/frightened.png").convert_alpha())
+        except Exception:
+            logger.warning(
+                "Frightened sprite not loaded, using default instead."
+            )
+            surf = pygame.Surface((30, 30))
+            surf.fill((0, 0, 255))  # Bleu par défaut
+            self.ghost_sprites["frightened"] = surf
+        try:
+            self.ghost_sprites["dead"] = (
+                pygame.image.load("assets/ghost_dead.png").convert_alpha())
+        except Exception:
+            surf = pygame.Surface((30, 30))
+            surf.fill((255, 255, 255))
+            self.ghost_sprites["dead"] = surf
 
-    def _get_maze_offset(self, engine: Engine, window_w: int) -> tuple[int, int]:
+    def _get_maze_offset(self, engine: Engine,
+                         window_w: int) -> tuple[int, int]:
         available_w = window_w
         available_h = self.screen.get_height() - self.header - self.footer
         # C_S s'adapte a la taille du level en cours
@@ -239,7 +271,7 @@ class Renderer:
             pygame.draw.circle(self.screen, gum_color, center, 8)
 
     def draw_ghost(
-        self, ghost: "Ghost", maze_ox: int, maze_oy: int  # type: ignore
+        self, ghost: "Ghost", maze_ox: int, maze_oy: int
     ) -> None:
         gx, gy = ghost.get_position()
         offset_x: float = 0
@@ -258,12 +290,53 @@ class Renderer:
             elif ghost.direction == Direction.EAST:
                 offset_x = -dist_restante
 
-        px: float = gx * self.c_s + maze_ox + (self.c_s // 2) + offset_x
-        py: float = gy * self.c_s + maze_oy + (self.c_s // 2) + offset_y
-        pygame.draw.circle(
-            self.screen, ghost.color,
-            (int(px), int(py)), self.c_s // 2.5
+        # Sélection du sprite selon l'état actuel du fantôme
+        if ghost._state == State.FRIGHTENED:
+            sprite = self.ghost_sprites["frightened"]
+        elif ghost._state == State.DEAD:
+            sprite = self.ghost_sprites["dead"]
+        else:
+            sprite = self.ghost_sprites.get(ghost.color)
+
+        if sprite is None:
+            sprite = pygame.Surface((30, 30))
+            sprite.fill((255, 0, 255))
+
+        sprite_resized: pygame.Surface = pygame.transform.smoothscale(
+            sprite, (self.c_s, self.c_s)
         )
+
+        px: float = gx * self.c_s + maze_ox + offset_x
+        py: float = gy * self.c_s + maze_oy + offset_y
+
+        self.screen.blit(sprite_resized, (int(px), int(py)))
+
+    # def draw_ghost(
+    #     self, ghost: "Ghost", maze_ox: int, maze_oy: int  # type: ignore
+    # ) -> None:
+    #     gx, gy = ghost.get_position()
+    #     offset_x: float = 0
+    #     offset_y: float = 0
+
+    #     if ghost.direction is not None:
+    #         progress: float = ghost.move_timer / 30.0
+    #         progress = min(1.0, progress)
+    #         dist_restante: float = self.c_s * (1.0 - progress)
+    #         if ghost.direction == Direction.NORTH:
+    #             offset_y = dist_restante
+    #         elif ghost.direction == Direction.SOUTH:
+    #             offset_y = -dist_restante
+    #         elif ghost.direction == Direction.WEST:
+    #             offset_x = dist_restante
+    #         elif ghost.direction == Direction.EAST:
+    #             offset_x = -dist_restante
+
+    #     px: float = gx * self.c_s + maze_ox + (self.c_s // 2) + offset_x
+    #     py: float = gy * self.c_s + maze_oy + (self.c_s // 2) + offset_y
+    #     pygame.draw.circle(
+    #         self.screen, ghost.color,
+    #         (int(px), int(py)), self.c_s // 2.5
+    #     )
 
     def _draw_hud(self, engine: Engine, window_w: int) -> None:
         footer_y: int = (

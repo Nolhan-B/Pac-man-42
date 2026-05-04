@@ -49,9 +49,9 @@ class Engine():
         # Haut-Droit
         self.ghosts.append(Ghost("blue", w - 2, 1, self, (w - 2, 1)))
         # Bas-Gauche
-        self.ghosts.append(Ghost("green", 1, h - 2, self, (1, h - 2)))
+        self.ghosts.append(Ghost("pink", 1, h - 2, self, (1, h - 2)))
         # Bas-Droit
-        self.ghosts.append(Ghost("purple", w - 2, h - 2, self, (w - 2, h - 2)))
+        self.ghosts.append(Ghost("yellow", w - 2, h - 2, self, (w - 2, h - 2)))
 
     def take_pac_gum(self) -> None:
         y: int = self.player.get_pos_y()
