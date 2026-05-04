@@ -85,7 +85,8 @@ class Renderer:
         window_w: int,
         game_state: GameState,
         countdown: int,
-        show_cheats: bool
+        show_cheats: bool,
+        cheats: dict = None
     ) -> None:
         self.screen.fill((0, 0, 0))
 
@@ -99,8 +100,8 @@ class Renderer:
                           engine.invincibility_timer)
         self._draw_hud(engine, window_w)
 
-        if show_cheats is True:
-            self._draw_cheats_overlay()
+        if show_cheats:
+            self._draw_cheats_overlay(cheats)
 
         if game_state == GameState.COUNTDOWN:
             self._draw_countdown(countdown, window_w)
@@ -372,26 +373,38 @@ class Renderer:
             )
         )
 
-    def _draw_cheats_overlay(self) -> None:
+    def _draw_cheats_overlay(self, cheats: dict) -> None:
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
         self.screen.blit(overlay, (0, 0))
 
-        cheats = [
+        def status(val: bool) -> str:
+            return "ON" if val else "OFF"
+
+        lines = [
             "CHEATS",
             "",
-            "I  → Invincible",
-            "F  → Freeze ghosts",
-            "S  → Speed",
-            "N  → Next level",
-            "V  → +1 Life",
+            f"I → Invincible : {status(cheats['invincible'])}",
+            f"F → Freeze ghosts : {status(cheats['freeze'])}",
+            f"S → Speed : {status(cheats['speed'])}",
+            "N → Next level",
+            "V → +1 Life",
             "",
             "TAB → Fermer"
         ]
 
-        for i, line in enumerate(cheats):
+        for i, line in enumerate(lines):
             font = self.font_big if i == 0 else self.font
-            text = font.render(line, True, (255, 255, 255))
+
+            # couleur dynamique ON/OFF
+            if "ON" in line:
+                color = (0, 255, 0)
+            elif "OFF" in line:
+                color = (255, 80, 80)
+            else:
+                color = (255, 255, 255)
+
+            text = font.render(line, True, color)
             x = (self.screen.get_width() - text.get_width()) // 2
             y = 150 + i * 40
             self.screen.blit(text, (x, y))
@@ -507,7 +520,7 @@ def main() -> None:
                 countdown -= 1
             if countdown < 0:
                 game_state = GameState.PLAYING
-            renderer.draw_all(engine, WINDOW_W, game_state, countdown, show_cheats)
+            renderer.draw_all(engine, WINDOW_W, game_state, countdown, show_cheats, cheats)
 
         elif game_state == GameState.PLAYING:
             # Invincible
@@ -531,10 +544,10 @@ def main() -> None:
             engine.run()
             if not engine.running:
                 game_state = GameState.GAME_OVER
-            renderer.draw_all(engine, WINDOW_W, game_state, countdown, show_cheats)
+            renderer.draw_all(engine, WINDOW_W, game_state, countdown, show_cheats, cheats)
 
         elif game_state == GameState.GAME_OVER:
-            renderer.draw_all(engine, WINDOW_W, game_state, countdown, show_cheats)
+            renderer.draw_all(engine, WINDOW_W, game_state, countdown, show_cheats, cheats)
 
         clock.tick(60)
 
