@@ -1,7 +1,8 @@
+import math
 from parser import ConfigLoader
 from generate_level import Level
 from ghost import Ghost
-from constants import State
+from constants import State, Direction
 from player import Player
 
 
@@ -19,17 +20,13 @@ class Engine():
         self.is_paused: bool = False
         self.current_level: Level = None
         self.invincibility_timer = 0
+        self.c_s: int = 30  # mis a jour depuis le main apres init
 
     def load_level(self, level_id: int) -> None:
-        # On charge les nouvelles données de map
         self.current_level = Level(level_id, self.config)
-
-        # On calcule le milieu de la nouvelle map
         mid_x = self.current_level.width // 2
         mid_y = self.current_level.height // 2
-        # On téléporte le joueur existant au milieu
         self.player.set_position(mid_x, mid_y)
-        # Idem pour les fantômes
         self._spawn_ghosts()
 
     def next_level(self) -> None:
@@ -37,23 +34,61 @@ class Engine():
         if self.level_id < len(self.config.levels):
             self.load_level(self.level_id)
         else:
-            print("Congrats ! You finished te game !")
+            print("Congrats ! You finished the game !")
             self.running = False
 
     def _spawn_ghosts(self) -> None:
         w = self.current_level.width
         h = self.current_level.height
-
         self.ghosts.clear()
-        # On spawn a(x, y) et enregistre le spawn (x, y) pour le mode DEAD
-        # Haut-Gauche
         self.ghosts.append(Ghost("red", 1, 1, self, (1, 1)))
-        # Haut-Droit
         self.ghosts.append(Ghost("blue", w - 2, 1, self, (w - 2, 1)))
-        # Bas-Gauche
         self.ghosts.append(Ghost("pink", 1, h - 2, self, (1, h - 2)))
-        # Bas-Droit
         self.ghosts.append(Ghost("yellow", w - 2, h - 2, self, (w - 2, h - 2)))
+
+    def _get_visual_pos_player(self) -> tuple[float, float]:
+        # calcule la position visuelle du player en pixels (sans offset maze)
+        px = self.player.get_pos_x()
+        py = self.player.get_pos_y()
+        if px is None:
+            return 0.0, 0.0
+
+        offset_x: float = 0.0
+        offset_y: float = 0.0
+        direction = self.player.current_direction
+        progress = self.player.move_timer / self.player.speed
+
+        if direction == Direction.NORTH:
+            offset_y = -progress * self.c_s
+        elif direction == Direction.SOUTH:
+            offset_y = progress * self.c_s
+        elif direction == Direction.WEST:
+            offset_x = -progress * self.c_s
+        elif direction == Direction.EAST:
+            offset_x = progress * self.c_s
+
+        return px * self.c_s + offset_x + self.c_s // 2, py * self.c_s + offset_y + self.c_s // 2
+
+    def _get_visual_pos_ghost(self, ghost: "Ghost") -> tuple[float, float]:
+        # calcule la position visuelle du ghost en pixels (sans offset maze)
+        gx = ghost.pos_x
+        gy = ghost.pos_y
+        offset_x: float = 0.0
+        offset_y: float = 0.0
+
+        if ghost.direction is not None:
+            progress = min(1.0, ghost.move_timer / 30.0)
+            dist_restante = self.c_s * (1.0 - progress)
+            if ghost.direction == Direction.NORTH:
+                offset_y = dist_restante
+            elif ghost.direction == Direction.SOUTH:
+                offset_y = -dist_restante
+            elif ghost.direction == Direction.WEST:
+                offset_x = dist_restante
+            elif ghost.direction == Direction.EAST:
+                offset_x = -dist_restante
+
+        return gx * self.c_s + offset_x + self.c_s // 2, gy * self.c_s + offset_y + self.c_s // 2
 
     def take_pac_gum(self) -> None:
         y: int = self.player.get_pos_y()
@@ -68,7 +103,6 @@ class Engine():
             self._check_win()
             for ghost in self.ghosts:
                 ghost.force_u_turn()
-
         elif type_gum == "NORMAL":
             self.player.add_score(self.config.points_per_pacgum)
             self.current_level.total_gum -= 1
@@ -77,31 +111,28 @@ class Engine():
             return
 
     def _check_win(self) -> None:
-        # Condition de Victoire
         if self.current_level.total_gum == 0:
-            print("Niveau Terminé !")
+            print("Niveau Termine !")
             self.next_level()
 
     def _check_loose(self) -> None:
-        # Condition de Défaite
         if self.player.lives <= 0:
             print("Game Over...")
-            self.running = False  # Pour arrêter la boucle de jeu
+            self.running = False
 
     def _check_collisions(self) -> None:
-
         if self.invincibility_timer > 0:
             return
-        px: int = self.player.get_pos_x()
-        py: int = self.player.get_pos_y()
+
+        px_vis, py_vis = self._get_visual_pos_player()
 
         for ghost in self.ghosts:
-            gx: int = ghost.pos_x
-            gy: int = ghost.pos_y
-
-            dist_carree = (gx - px)**2 + (gy - py)**2
-
-            if dist_carree < 0.2:
+            gx_vis, gy_vis = self._get_visual_pos_ghost(ghost)
+            dist = math.sqrt(
+                (gx_vis - px_vis) ** 2 + (gy_vis - py_vis) ** 2
+            )
+            # collision si moins de 60% de la taille d'une case
+            if dist < self.c_s * 0.6:
                 self._handle_collision(ghost)
 
     def _handle_collision(self, ghost: "Ghost") -> None:
@@ -122,6 +153,7 @@ class Engine():
 
         if self.invincibility_timer > 0:
             self.invincibility_timer -= 1
+
         layout = self.current_level.layout
         self.player.update_player(layout)
 

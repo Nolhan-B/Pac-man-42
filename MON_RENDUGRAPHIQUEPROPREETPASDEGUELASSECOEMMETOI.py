@@ -439,6 +439,7 @@ def main() -> None:
 
     renderer: Renderer = Renderer(screen, config)
     renderer.c_s = C_S
+    engine.c_s = C_S
 
     clock: pygame.time.Clock = pygame.time.Clock()
 
