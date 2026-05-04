@@ -125,6 +125,8 @@ class Engine():
             return
 
         px_vis, py_vis = self._get_visual_pos_player()
+        px = self.player.get_pos_x()
+        py = self.player.get_pos_y()
 
         for ghost in self.ghosts:
             gx_vis, gy_vis = self._get_visual_pos_ghost(ghost)
@@ -132,7 +134,11 @@ class Engine():
                 (gx_vis - px_vis) ** 2 + (gy_vis - py_vis) ** 2
             )
             # collision si moins de 60% de la taille d'une case
-            if dist < self.c_s * 0.6:
+            same_cell = (
+                    (ghost.pos_x == px and ghost.pos_y == py) or
+                    (ghost.prev_x == px and ghost.prev_y == py)
+            )
+            if dist < self.c_s * 0.45 and same_cell:
                 self._handle_collision(ghost)
 
     def _handle_collision(self, ghost: "Ghost") -> None:

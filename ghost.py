@@ -14,6 +14,8 @@ class Ghost():
         self._spawn = spawn
         self.pos_y = pos_y
         self.pos_x = pos_x
+        self.prev_x = self.pos_x
+        self.prev_y = self.pos_y
         self._state = State.CHASE
         self.direction = None
         self.speed: float = 1.0
@@ -21,6 +23,7 @@ class Ghost():
         self.move_timer: float = 0.0
         self.frightened_timer: int = 0
         self.pos_history = []
+
 
     def set_state(self, new_state: State):
         if new_state == State.FRIGHTENED:
@@ -68,6 +71,8 @@ class Ghost():
             move = self._respawn(possible)
 
         # Met a jour la direction et la position
+        self.prev_x = self.pos_x
+        self.prev_y = self.pos_y
         self.direction = move
         if move == Direction.NORTH:
             self.pos_y -= 1
