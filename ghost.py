@@ -20,6 +20,7 @@ class Ghost():
         self.engine: "Engine" = engine
         self.move_timer: float = 0.0
         self.frightened_timer: int = 0
+        self.pos_history = []
 
     def set_state(self, new_state: State):
         if new_state == State.FRIGHTENED:
@@ -52,6 +53,10 @@ class Ghost():
     def move(self, layout: list[list[int]]) -> None:
         possible = []
         possible = self._get_possible_direction(layout)
+
+        self.pos_history.append((self.pos_x, self.pos_y))
+        if len(self.pos_history) > 8:
+            self.pos_history.pop(0)
 
         if self._state == State.CHASE:
             move = self._chase_pac_man(possible)
@@ -116,7 +121,7 @@ class Ghost():
         return possible
 
     def _chase_pac_man(self, possible):
-        if random.random() < 0.20:
+        if random.random() < 0.40:
             return random.choice(possible)
         target: tuple = self.engine.player.get_position()
         move = self._get_direction(target, possible)
@@ -150,7 +155,9 @@ class Ghost():
             # Calcul de la distance euclidienne au carré
             # target[0] est x, target[1] est y
             dist = (target[0] - tx)**2 + (target[1] - ty)**2
-
+            # Malus pour les cases deja visitee
+            if (tx, ty) in self.pos_history:
+                dist += 1000
             # Comparaison
             if dist < best_distance:
                 best_distance = dist
