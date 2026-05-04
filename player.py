@@ -13,10 +13,21 @@ class Player:
         self.current_direction: Direction = None
         self.next_direction: Direction = None
         self.move_timer: float = 0.0
+        self.speed: float = 20.0
 
     def _init_player_pos(self, maze_size_x: int, maze_size_y: int) -> None:
         self._pos_x = maze_size_x // 2
         self._pos_y = maze_size_y // 2
+
+    def update_speed(self, value: float) -> None:
+        if value <= 0:
+            logger.warning("Can not update player's speed, "
+                           "Value must be > 0 !")
+        else:
+            self.speed = value
+
+    def set_default_speed(self) -> None:
+        self.speed = 20.0
 
     def move_up(self) -> None:
         self.current_direction = Direction.NORTH
@@ -99,7 +110,7 @@ class Player:
             # On recule de manière fluide UNIQUEMENT si on n'était pas bloqué contre un mur
             if self.move_timer > 0 and self._can_move(self.current_direction, layout):
                 self._execute_move()
-                self.move_timer = 20.0 - self.move_timer
+                self.move_timer = self.speed - self.move_timer
             else:
                 # Si on était bloqué (timer à 0), on pivote juste sur place
                 self.move_timer = 0.0
@@ -110,7 +121,7 @@ class Player:
 
         self.move_timer += 1.0
         
-        if self.move_timer >= 20.0:
+        if self.move_timer >= self.speed:
             if self.current_direction and self._can_move(self.current_direction, layout):
                 self._execute_move()
 

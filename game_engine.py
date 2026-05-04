@@ -12,7 +12,9 @@ class Engine():
         self.player: Player = player
         self.lives = config.lives
         self.ghosts: list[Ghost] = []
-        self.cheat_mode_active: bool = False
+        self.cheat_invincible: bool = True
+        self.cheat_freeze: bool = False
+        self.cheat_speed: bool = False
         self.running: bool = True
         self.is_paused: bool = False
         self.current_level: Level = None
@@ -103,13 +105,14 @@ class Engine():
                 self._handle_collision(ghost)
 
     def _handle_collision(self, ghost: "Ghost") -> None:
-        if ghost._state == State.CHASE:
-            if self.invincibility_timer <= 0:
-                self.invincibility_timer = 180
-                self.player.lose_life()
-                self._check_loose()
-
-        elif ghost._state == State.FRIGHTENED:
+        if self.cheat_invincible is False:
+            if ghost._state == State.CHASE:
+                if self.invincibility_timer <= 0:
+                    self.invincibility_timer = 180
+                    self.player.lose_life()
+                    self._check_loose()
+        
+        if ghost._state == State.FRIGHTENED:
             self.player.add_score(self.config.points_per_ghost)
             ghost.set_state(State.DEAD)
 
@@ -121,7 +124,15 @@ class Engine():
             self.invincibility_timer -= 1
         layout = self.current_level.layout
         self.player.update_player(layout)
-        for ghost in self.ghosts:
-            ghost.ghost_update()
+
+        if self.cheat_speed is True:
+            self.player.update_speed(10.0)
+        else:
+            self.player.set_default_speed()
+
+        if self.cheat_freeze is False:
+            for ghost in self.ghosts:
+                ghost.ghost_update()
+
         self.take_pac_gum()
         self._check_collisions()
