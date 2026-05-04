@@ -30,9 +30,23 @@ class Ghost():
         return (self.pos_x, self.pos_y)
 
     def force_u_turn(self):
-        # On inverse la direction actuelle
+        # On inverse la direction actuelle de manière fluide
         if self.direction in OPPOSITES:
+            if self.direction == Direction.NORTH:
+                self.pos_y += 1
+            elif self.direction == Direction.SOUTH:
+                self.pos_y -= 1
+            elif self.direction == Direction.EAST:
+                self.pos_x -= 1
+            elif self.direction == Direction.WEST:
+                self.pos_x += 1
+
+            # On inverse le timer pour éviter le saut visuel
+            self.move_timer = 30.0 - self.move_timer
+
+            # On applique la nouvelle direction
             self.direction = OPPOSITES[self.direction]
+
         self.set_state(State.FRIGHTENED)
 
     def move(self, layout: list[list[int]]) -> None:

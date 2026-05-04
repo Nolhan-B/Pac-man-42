@@ -99,7 +99,7 @@ class Player:
             # On recule de manière fluide UNIQUEMENT si on n'était pas bloqué contre un mur
             if self.move_timer > 0 and self._can_move(self.current_direction, layout):
                 self._execute_move()
-                self.move_timer = 30.0 - self.move_timer
+                self.move_timer = 20.0 - self.move_timer
             else:
                 # Si on était bloqué (timer à 0), on pivote juste sur place
                 self.move_timer = 0.0
@@ -110,7 +110,7 @@ class Player:
 
         self.move_timer += 1.0
         
-        if self.move_timer >= 30.0:
+        if self.move_timer >= 20.0:
             if self.current_direction and self._can_move(self.current_direction, layout):
                 self._execute_move()
 

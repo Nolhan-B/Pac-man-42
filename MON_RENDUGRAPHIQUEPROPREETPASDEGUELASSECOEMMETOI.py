@@ -141,7 +141,7 @@ class Renderer:
             and player._can_move(player.current_direction, layout)
         )
         if can_move:
-            progress: float = player.move_timer / 30.0
+            progress: float = player.move_timer / 20.0
             if player.current_direction == Direction.NORTH:
                 offset_y = -progress * self.c_s
             elif player.current_direction == Direction.SOUTH:
