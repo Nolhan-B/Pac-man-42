@@ -296,7 +296,13 @@ class Renderer:
 
         # Sélection du sprite selon l'état actuel du fantôme
         if ghost._state == State.FRIGHTENED:
-            sprite = self.ghost_sprites["frightened"]
+            # Si le timer est bas: clignottement
+            if ((ghost.frightened_timer < 120)
+               and (ghost.frightened_timer // 10) % 2 == 0):
+                #  sprite normal pour le clignotement
+                sprite = self.ghost_sprites.get(ghost.color)
+            else:
+                sprite = self.ghost_sprites["frightened"]
         elif ghost._state == State.DEAD:
             sprite = self.ghost_sprites["dead"]
         else:
