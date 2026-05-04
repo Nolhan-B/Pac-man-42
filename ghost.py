@@ -24,8 +24,9 @@ class Ghost():
         self.frightened_timer: int = 0
         self.pos_history = []
 
-
     def set_state(self, new_state: State):
+        if new_state == State.FRIGHTENED and self._state == State.DEAD:
+            return
         if new_state == State.FRIGHTENED:
             self.frightened_timer = 360
         self._state = new_state
