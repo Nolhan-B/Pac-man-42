@@ -12,7 +12,7 @@ class Engine():
         self.player: Player = player
         self.lives = config.lives
         self.ghosts: list[Ghost] = []
-        self.cheat_invincible: bool = True
+        self.cheat_invincible: bool = False
         self.cheat_freeze: bool = False
         self.cheat_speed: bool = False
         self.running: bool = True
