@@ -95,7 +95,8 @@ class Renderer:
         self._draw_maze(engine.current_level.layout, ox, oy)
         for ghost in engine.ghosts:
             self.draw_ghost(ghost, ox, oy)
-        self.draw_pac_man(engine.player, engine.current_level.layout, ox, oy)
+        self.draw_pac_man(engine.player, engine.current_level.layout, ox, oy,
+                          engine.invincibility_timer)
         self._draw_hud(engine, window_w)
 
         if show_cheats is True:
@@ -184,8 +185,13 @@ class Renderer:
         player: Player,
         layout: list[list[int]],
         maze_ox: int,
-        maze_oy: int
+        maze_oy: int,
+        invincibility_timer: int
     ) -> None:
+
+        if invincibility_timer > 0 and (invincibility_timer // 4) % 2 == 0:
+            return
+
         px, py = player.get_position()
         if px is None:
             return
@@ -322,33 +328,6 @@ class Renderer:
         py: float = gy * self.c_s + maze_oy + offset_y
 
         self.screen.blit(sprite_resized, (int(px), int(py)))
-
-    # def draw_ghost(
-    #     self, ghost: "Ghost", maze_ox: int, maze_oy: int  # type: ignore
-    # ) -> None:
-    #     gx, gy = ghost.get_position()
-    #     offset_x: float = 0
-    #     offset_y: float = 0
-
-    #     if ghost.direction is not None:
-    #         progress: float = ghost.move_timer / 30.0
-    #         progress = min(1.0, progress)
-    #         dist_restante: float = self.c_s * (1.0 - progress)
-    #         if ghost.direction == Direction.NORTH:
-    #             offset_y = dist_restante
-    #         elif ghost.direction == Direction.SOUTH:
-    #             offset_y = -dist_restante
-    #         elif ghost.direction == Direction.WEST:
-    #             offset_x = dist_restante
-    #         elif ghost.direction == Direction.EAST:
-    #             offset_x = -dist_restante
-
-    #     px: float = gx * self.c_s + maze_ox + (self.c_s // 2) + offset_x
-    #     py: float = gy * self.c_s + maze_oy + (self.c_s // 2) + offset_y
-    #     pygame.draw.circle(
-    #         self.screen, ghost.color,
-    #         (int(px), int(py)), self.c_s // 2.5
-    #     )
 
     def _draw_hud(self, engine: Engine, window_w: int) -> None:
         footer_y: int = (

@@ -1,7 +1,6 @@
 # Fantômes
 
-[] Quand je prends un super pacgum, le mouvement des fantomes "glitch" ou alors ils subissent un minitp, a regarder de plus pres
-[] La fenetre prend la taille adapté au premier level du jeu, faudrais faire que ca soit soit le plus grand, soit une taille fixe.
+les fantomes repasse en frightened quqnd pac man prend une super gum alors quils sont dead et pas encore respawn
 
 Note :
 jai pas encore essayer de deconstruire mon idee mais,

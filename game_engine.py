@@ -111,7 +111,7 @@ class Engine():
                     self.invincibility_timer = 180
                     self.player.lose_life()
                     self._check_loose()
-        
+
         if ghost._state == State.FRIGHTENED:
             self.player.add_score(self.config.points_per_ghost)
             ghost.set_state(State.DEAD)
