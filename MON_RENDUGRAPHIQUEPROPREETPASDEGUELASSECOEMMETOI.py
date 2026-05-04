@@ -305,7 +305,9 @@ class Renderer:
         sprite_resized: pygame.Surface = pygame.transform.smoothscale(
             sprite, (self.c_s, self.c_s)
         )
-
+        # Le regard suis la direction
+        if ghost.direction == Direction.WEST:
+            sprite_resized = pygame.transform.flip(sprite_resized, True, False)
         px: float = gx * self.c_s + maze_ox + offset_x
         py: float = gy * self.c_s + maze_oy + offset_y
 
