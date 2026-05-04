@@ -101,7 +101,7 @@ class Engine():
 
             dist_carree = (gx - px)**2 + (gy - py)**2
 
-            if dist_carree < 0.5:  # 0.7 au carré ça fait environ 0.5
+            if dist_carree < 0.2:
                 self._handle_collision(ghost)
 
     def _handle_collision(self, ghost: "Ghost") -> None:
