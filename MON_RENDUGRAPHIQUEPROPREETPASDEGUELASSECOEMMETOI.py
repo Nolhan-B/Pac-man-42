@@ -426,6 +426,10 @@ def main() -> None:
     config: ConfigLoader = ConfigLoader(sys.argv[1])
     config.load()
 
+    print("\n" * 5)
+    print(config.levels)
+    print("\n" * 5)
+
     player, engine = _reset_game(config)
 
     C_S: int = 30
