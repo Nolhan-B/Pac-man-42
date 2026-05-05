@@ -236,20 +236,6 @@ class Renderer:
             x = (window_w - text.get_width()) // 2
             y = (self.screen.get_height() - text.get_height()) // 2
             self.screen.blit(text, (x, y))
-    # def _draw_countdown(self, countdown: int, window_w: int) -> None:
-    #     overlay: pygame.Surface = pygame.Surface(
-    #         self.screen.get_size(), pygame.SRCALPHA
-    #     )
-    #     overlay.fill((0, 0, 0, 140))
-    #     self.screen.blit(overlay, (0, 0))
-
-    #     label: str = str("Ready?") if countdown > 0 else "GO !"
-    #     text: pygame.Surface = self.font_big.render(
-    #         label, True, (255, 220, 0)
-    #     )
-    #     x = (window_w - text.get_width()) // 2
-    #     y = (self.screen.get_height() - text.get_height()) // 2
-    #     self.screen.blit(text, (x, y))
 
     def _draw_game_over(self, window_w: int) -> None:
 
@@ -289,6 +275,9 @@ class Renderer:
         if px is None:
             return
 
+        padding = 12
+        draw_size = self.c_s - padding
+
         offset_x: float = 0
         offset_y: float = 0
         can_move = (
@@ -307,8 +296,6 @@ class Renderer:
             elif player.current_direction == Direction.EAST:
                 offset_x = progress * self.c_s
 
-        # ping-pong 0->7->0
-        
         FRAMES = 8
         t = self.tick % (FRAMES * 2)
         frame_idx = t if t < FRAMES else (FRAMES * 2 - 1 - t)
@@ -318,22 +305,21 @@ class Renderer:
             Direction.NORTH: 90,
             Direction.SOUTH: 270,
         }
-
         if player.current_direction == Direction.WEST:
-            # frame miroir, pas de rotation
             sprite = pygame.transform.smoothscale(
-                self.pacman_frames_west[frame_idx], (self.c_s, self.c_s)
+                self.pacman_frames_west[frame_idx], (draw_size, draw_size)
             )
         else:
             sprite = pygame.transform.smoothscale(
-                self.pacman_frames[frame_idx], (self.c_s, self.c_s)
+                self.pacman_frames[frame_idx], (draw_size, draw_size)
             )
             angle = rotations.get(player.current_direction, 0)
             if angle:
                 sprite = pygame.transform.rotate(sprite, angle)
 
-        pixel_x = px * self.c_s + maze_ox + offset_x
-        pixel_y = py * self.c_s + maze_oy + offset_y
+        # On ajoute padding // 2 à la position pour recentrer le sprite dans la case
+        pixel_x = px * self.c_s + maze_ox + offset_x + (padding // 2)
+        pixel_y = py * self.c_s + maze_oy + offset_y + (padding // 2)
         self.screen.blit(sprite, (pixel_x, pixel_y))
 
     def _draw_maze(
@@ -348,7 +334,7 @@ class Renderer:
 
     def _draw_walls(self, ox: int, oy: int, cell: int) -> None:
         color: tuple[int, int, int] = (33, 33, 255)
-        thickness: int = 2
+        thickness: int = 8
         if cell & 1:
             pygame.draw.line(
                 self.screen, color,
