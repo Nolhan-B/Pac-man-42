@@ -186,7 +186,7 @@ class Renderer:
         self.screen.blit(
             sub, ((window_w - sub.get_width()) // 2, y + 100)
         )
-
+    
     def draw_pac_man(
         self,
         player: Player,
@@ -434,13 +434,6 @@ class Renderer:
         if ouverture < 360:
             # Dessine le corps jaune qui s'efface
             pygame.draw.arc(self.screen, (255, 255, 0), rect, start_angle, end_angle, radius)
-
-            # Petit effet de particules : des petits points jaunes qui s'envolent
-            if timer < 30:
-                for i in range(38):
-                    p_offset = (30 - timer) * (i + 1) * 0.5
-                    pygame.draw.circle(self.screen, (255, 255, 0),
-                                       (center_x, int(center_y - p_offset)), 2)
 
 def _reset_game(config: ConfigLoader) -> tuple[Player, Engine]:
     # recrée un player et un engine tout frais pour une nouvelle partie
