@@ -59,7 +59,7 @@ class Ghost():
         possible = self._get_possible_direction(layout)
 
         self.pos_history.append((self.pos_x, self.pos_y))
-        if len(self.pos_history) > 8:
+        if len(self.pos_history) > 18:
             self.pos_history.pop(0)
 
         if self._state == State.CHASE:
@@ -127,7 +127,7 @@ class Ghost():
         return possible
 
     def _chase_pac_man(self, possible):
-        if random.random() < 0.40:
+        if random.random() < 0.35:
             return random.choice(possible)
         target: tuple = self.engine.player.get_position()
         move = self._get_direction(target, possible)
@@ -135,6 +135,8 @@ class Ghost():
 
     def _respawn(self, possible):
         target: tuple = self._spawn
+        if random.random() < 0.35:
+            return random.choice(possible)
         move = self._get_direction(target, possible)
         return move
 

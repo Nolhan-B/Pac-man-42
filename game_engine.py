@@ -138,7 +138,7 @@ class Engine():
                     (ghost.pos_x == px and ghost.pos_y == py) or
                     (ghost.prev_x == px and ghost.prev_y == py)
             )
-            if dist < self.c_s * 0.45 and same_cell:
+            if dist < self.c_s * 0.65 and same_cell:
                 self._handle_collision(ghost)
 
     def _handle_collision(self, ghost: "Ghost") -> None:
