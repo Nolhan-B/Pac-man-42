@@ -197,7 +197,9 @@ class Renderer:
         self.screen.blit(
             sub, ((window_w - sub.get_width()) // 2, y + 100)
         )
-    def draw_pac_man(self, player, layout, maze_ox, maze_oy, invincibility_timer):
+
+    def draw_pac_man(self, player, layout, maze_ox, maze_oy,
+                     invincibility_timer):
         if invincibility_timer > 0 and (invincibility_timer // 4) % 2 == 0:
             return
         px, py = player.get_position()
@@ -249,55 +251,6 @@ class Renderer:
         pixel_x = px * self.c_s + maze_ox + offset_x
         pixel_y = py * self.c_s + maze_oy + offset_y
         self.screen.blit(sprite, (pixel_x, pixel_y))
-    # def draw_pac_man(
-    #     self,
-    #     player: Player,
-    #     layout: list[list[int]],
-    #     maze_ox: int,
-    #     maze_oy: int,
-    #     invincibility_timer: int
-    # ) -> None:
-
-    #     if invincibility_timer > 0 and (invincibility_timer // 4) % 2 == 0:
-    #         return
-
-    #     px, py = player.get_position()
-    #     if px is None:
-    #         return
-
-    #     offset_x: float = 0
-    #     offset_y: float = 0
-
-    #     can_move: bool = (
-    #         player.current_direction is not None
-    #         and player._can_move(player.current_direction, layout)
-    #     )
-    #     if can_move:
-    #         progress: float = player.move_timer / player.speed
-    #         if player.current_direction == Direction.NORTH:
-    #             offset_y = -progress * self.c_s
-    #         elif player.current_direction == Direction.SOUTH:
-    #             offset_y = progress * self.c_s
-    #         elif player.current_direction == Direction.WEST:
-    #             offset_x = -progress * self.c_s
-    #         elif player.current_direction == Direction.EAST:
-    #             offset_x = progress * self.c_s
-
-    #     sprite_resized: pygame.Surface = pygame.transform.smoothscale(
-    #         self.pacman_sprite, (self.c_s, self.c_s)
-    #     )
-    #     rotations: dict[Direction, int] = {
-    #         Direction.EAST: 0, Direction.NORTH: 90,
-    #         Direction.WEST: 180, Direction.SOUTH: 270
-    #     }
-    #     angle: int = rotations.get(player.current_direction, 0)
-    #     sprite_final: pygame.Surface = pygame.transform.rotate(
-    #         sprite_resized, angle
-    #     )
-
-    #     pixel_x: float = px * self.c_s + maze_ox + offset_x
-    #     pixel_y: float = py * self.c_s + maze_oy + offset_y
-    #     self.screen.blit(sprite_final, (pixel_x, pixel_y))
 
     def _draw_maze(
         self, layout: list[list[int]], maze_ox: int, maze_oy: int
