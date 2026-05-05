@@ -27,25 +27,20 @@ class Renderer:
         self.font_menu: pygame.font.Font = pygame.font.SysFont("Arial", 40)
         self.tick: int = 0
         FRAMES = 8
-        self.pacman_frames = [
-            pygame.image.load(f"assets/pacman_{i}.png").convert_alpha()
-            for i in range(FRAMES)
-        ]
-        self.pacman_frames_west = [
-            pygame.image.load(f"assets/pacman_west_{i}.png").convert_alpha()
-            for i in range(FRAMES)
-        ]
-
-        # try:
-        #     self.pacman_sprite: pygame.Surface = pygame.image.load(
-        #         "assets/pacman.png"
-        #     ).convert_alpha()
-        # except Exception:
-        #     logger.warning(
-        #         "pacman sprite not loaded, using yellow rect instead."
-        #     )
-        #     self.pacman_sprite = pygame.Surface((30, 30))
-        #     self.pacman_sprite.fill((255, 255, 0))
+        try:
+            self.pacman_frames = [
+                pygame.image.load(f"assets/pacman_{i}.png").convert_alpha()
+                for i in range(FRAMES)
+            ]
+            self.pacman_frames_west = [
+                pygame.image.load(f"assets/pacman_west_{i}.png").convert_alpha()
+                for i in range(FRAMES)
+            ]
+        except Exception:
+            logger.warning("pacman sprite not loaded, "
+                           "using yellow rect instead.")
+            self.pacman_sprite = pygame.Surface((30, 30))
+            self.pacman_sprite.fill((255, 255, 0))
         for color in ghost_list:
             try:
                 img = pygame.image.load(
