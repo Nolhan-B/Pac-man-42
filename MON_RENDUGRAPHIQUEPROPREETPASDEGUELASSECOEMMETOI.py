@@ -359,7 +359,7 @@ class Renderer:
             f"Vies: {engine.player.lives}", True, (255, 255, 255)
         )
         level_text: pygame.Surface = self.font.render(
-            f"Niveau: {engine.level_id + 1}", True, (255, 255, 255)
+            f"Level: {engine.level_id + 1}", True, (255, 255, 255)
         )
 
         total_width: int = (
@@ -536,7 +536,7 @@ def main() -> None:
                         cheats["speed"] = not cheats["speed"]
 
                     elif event.key == pygame.K_n:
-                        engine.load_level(engine.level_id + 1)
+                        engine.next_level()
 
                     elif event.key == pygame.K_v:
                         player.lives += 1
@@ -590,6 +590,11 @@ def main() -> None:
                 game_state = GameState.GAME_OVER
             elif engine.life_just_lost:
                 engine.life_just_lost = False
+                countdown = 1
+                frame_timer = 0
+                game_state = GameState.COUNTDOWN
+            elif engine.level_just_changed:
+                engine.level_just_changed = False
                 countdown = 1
                 frame_timer = 0
                 game_state = GameState.COUNTDOWN
