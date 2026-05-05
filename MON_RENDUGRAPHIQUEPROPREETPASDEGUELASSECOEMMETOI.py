@@ -26,6 +26,8 @@ class Renderer:
         )
         self.font_menu: pygame.font.Font = pygame.font.SysFont("Arial", 40)
         self.tick: int = 0
+        self.font = pygame.font.SysFont("Arial", 28)
+        self.font_mid: pygame.font.Font = pygame.font.SysFont("Arial", 32, bold=True)
         FRAMES = 8
         try:
             self.pacman_frames = [
@@ -84,6 +86,11 @@ class Renderer:
         except Exception:
             logger.warning("Banner PNG not found.")
             self.banner_img = None
+        try:
+            self.instruction_banner_img = pygame.image.load("assets/instruction_banner.png").convert_alpha()
+        except Exception:
+            logger.warning("Instruction banner PNG not found.")
+            self.instruction_banner_img = None
 
     def _get_maze_offset(self, engine: Engine,
                          window_w: int) -> tuple[int, int]:
@@ -471,43 +478,58 @@ class Renderer:
         if ouverture < 360:
             # Dessine le corps jaune qui s'efface
             pygame.draw.arc(self.screen, (255, 255, 0), rect, start_angle, end_angle, radius)
-        
+
         return timer == 1
 
     def draw_instructions(self, window_w: int, window_h: int) -> None:
-        self.screen.fill((0, 0, 0))
+        if self.menu_bg:
+            self.screen.blit(self.menu_bg, (0, 0))
+        else:
+            self.screen.fill((0, 0, 0))
+ 
+        overlay = pygame.Surface((window_w, window_h), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180)) # Un peu plus sombre pour faire ressortir le texte
+        self.screen.blit(overlay, (0, 0))
 
-        title = self.font_big.render("INSTRUCTIONS", True, (255, 220, 0))
-        self.screen.blit(title, ((window_w - title.get_width()) // 2, 40))
+        y = 20
+        if self.instruction_banner_img:
+            target_w = int(window_w * 0.7)
+            ratio = target_w / self.instruction_banner_img.get_width()
+            target_h = int(self.instruction_banner_img.get_height() * ratio)
+            scaled = pygame.transform.smoothscale(self.instruction_banner_img, (target_w, target_h))
+            self.screen.blit(scaled, ((window_w - target_w) // 2, y))
+            y += target_h + 30
+        else:
+            title = self.font_big.render("HOW TO PLAY", True, (255, 220, 0))
+            self.screen.blit(title, ((window_w - title.get_width()) // 2, y))
+            y += 100
 
-        lines = [
-            ("GOAL", (255, 220, 0)),
-            ("Eat all pac-gums to complete the level.", (255, 255, 255)),
-            ("Avoid ghosts or eat a super-gum to turn them edible.", (255, 255, 255)),
-            ("", None),
-            ("CONTROLS", (255, 220, 0)),
-            ("Arrow keys  ->  Move Pac-Man", (255, 255, 255)),
-            ("P / ESC  ->  Pause", (255, 255, 255)),
-            ("TAB  ->  Show cheats panel", (255, 255, 255)),
-            ("", None),
-            ("CHEATS", (255, 220, 0)),
-            ("I  ->  Invincibility", (255, 255, 255)),
-            ("F  ->  Freeze ghosts", (255, 255, 255)),
-            ("S  ->  Speed boost", (255, 255, 255)),
-            ("N  ->  Skip to next level", (255, 255, 255)),
-            ("V  ->  +1 life", (255, 255, 255)),
+        # On définit des sections claires
+        sections = [
+            ("--- GOAL ---", [
+                "Eat all pac-gums to win!",
+                "Avoid ghosts unless they are blue."
+            ]),
+            ("--- CONTROLS ---", [
+                "ARROWS : Move Pac-Man",
+                "P / ESC : Pause game",
+                "TAB : Open Cheat Menu"
+            ])
         ]
 
-        y = 160
-        for text, color in lines:
-            if not text:
-                y += 15
-                continue
-            surf = self.font.render(text, True, color)
-            self.screen.blit(surf, ((window_w - surf.get_width()) // 2, y))
-            y += 35
+        for title_text, lines in sections:
+            # Titre de section en moyen et gras
+            t_surf = self.font_mid.render(title_text, True, (255, 220, 0))
+            self.screen.blit(t_surf, ((window_w - t_surf.get_width()) // 2, y))
+            y += 45
 
-        hint = self.font.render("ESC / ENTER to go back", True, (100, 100, 100))
+            for line in lines:
+                l_surf = self.font.render(line, True, (255, 255, 255))
+                self.screen.blit(l_surf, ((window_w - l_surf.get_width()) // 2, y))
+                y += 35
+            y += 20 # Espace entre les sections
+
+        hint = self.font.render("Press ESC to return", True, (200, 200, 200))
         self.screen.blit(hint, ((window_w - hint.get_width()) // 2, window_h - 50))
 
         pygame.display.flip()
