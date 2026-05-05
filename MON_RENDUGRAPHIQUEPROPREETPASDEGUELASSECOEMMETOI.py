@@ -70,6 +70,20 @@ class Renderer:
             surf = pygame.Surface((30, 30))
             surf.fill((255, 255, 255))
             self.ghost_sprites["dead"] = surf
+        try:
+            bg_img = pygame.image.load("assets/menu_bg.png").convert()
+            self.menu_bg = (
+                pygame.transform.smoothscale(bg_img,
+                                             (self.screen.get_width(),
+                                              self.screen.get_height())))
+        except Exception:
+            logger.warning("Menu background not found.")
+            self.menu_bg = None
+        try:
+            self.banner_img = pygame.image.load("assets/banner.png").convert_alpha()
+        except Exception:
+            logger.warning("Banner PNG not found.")
+            self.banner_img = None
 
     def _get_maze_offset(self, engine: Engine,
                          window_w: int) -> tuple[int, int]:
@@ -125,14 +139,26 @@ class Renderer:
     def draw_menu(
         self, window_w: int, window_h: int, selection: int
     ) -> None:
-        self.screen.fill((0, 0, 0))
-
-        title: pygame.Surface = self.font_big.render(
-            "PAC-MAN", True, (255, 220, 0)
-        )
-        self.screen.blit(
-            title, ((window_w - title.get_width()) // 2, window_h // 4)
-        )
+        if self.menu_bg:
+            self.screen.blit(self.menu_bg, (0, 0))
+        else:
+            self.screen.fill((0, 0, 0))
+        overlay = pygame.Surface((window_w, window_h), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 120)) # 120 = opacité (0-255)
+        self.screen.blit(overlay, (0, 0))
+        if self.banner_img:
+            # On redimensionne la bannière pour qu'elle prenne 70% de la largeur
+            target_w = int(window_w * 0.7)
+            ratio = target_w / self.banner_img.get_width()
+            target_h = int(self.banner_img.get_height() * ratio)
+            
+            scaled_banner = pygame.transform.smoothscale(self.banner_img, (target_w, target_h))
+            b_x = (window_w - target_w) // 2
+            self.screen.blit(scaled_banner, (b_x, window_h // 30))
+        else:
+            # Fallback texte si pas de bannière
+            title = self.font_big.render("PAC-MAN", True, (255, 220, 0))
+            self.screen.blit(title, ((window_w - title.get_width()) // 2, window_h // 4))
 
         options: list[str] = ["Jouer", "Highscores", "Quitter"]
         for i, option in enumerate(options):
