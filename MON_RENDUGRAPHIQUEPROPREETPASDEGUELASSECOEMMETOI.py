@@ -208,6 +208,7 @@ class Renderer:
             and player._can_move(player.current_direction, layout)
         )
         if can_move:
+            self.tick += 1
             progress = player.move_timer / player.speed
             if player.current_direction == Direction.NORTH:
                 offset_y = -progress * self.c_s
@@ -219,7 +220,7 @@ class Renderer:
                 offset_x = progress * self.c_s
 
         # ping-pong 0->7->0
-        self.tick += 1
+        
         FRAMES = 8
         t = self.tick % (FRAMES * 2)
         frame_idx = t if t < FRAMES else (FRAMES * 2 - 1 - t)
