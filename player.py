@@ -14,6 +14,7 @@ class Player:
         self.next_direction: Direction = None
         self.move_timer: float = 0.0
         self.speed: float = 20.0
+        self.spawn: tuple[int][int] = None
 
     def _init_player_pos(self, maze_size_x: int, maze_size_y: int) -> None:
         self._pos_x = maze_size_x // 2

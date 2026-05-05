@@ -5,6 +5,7 @@ import logging
 from player import Player
 from game_engine import Engine
 from parser import ConfigLoader
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -96,8 +97,13 @@ class Renderer:
         self._draw_maze(engine.current_level.layout, ox, oy)
         for ghost in engine.ghosts:
             self.draw_ghost(ghost, ox, oy)
-        self.draw_pac_man(engine.player, engine.current_level.layout, ox, oy,
-                          engine.invincibility_timer)
+        if getattr(engine, 'dying', False):
+            self.draw_death_animation(engine.player,
+                                      engine.death_animation_timer, ox, oy)
+        else:
+            # On ne dessine le Pac-Man normal que s'il est vivant
+            self.draw_pac_man(engine.player, engine.current_level.layout, ox, oy,
+                              engine.invincibility_timer)
         self._draw_hud(engine, window_w)
 
         if show_cheats:
@@ -409,6 +415,32 @@ class Renderer:
             y = 150 + i * 40
             self.screen.blit(text, (x, y))
 
+    def draw_death_animation(self, player: Player, timer: int, maze_ox: int, maze_oy: int) -> None:
+        # Le timer descend de 60 à 0
+        ouverture = (60 - timer) * 6 
+
+        px, py = player.get_position()
+        center_x = int(px * self.c_s + maze_ox + self.c_s // 2)
+        center_y = int(py * self.c_s + maze_oy + self.c_s // 2)
+        radius = self.c_s // 2
+
+        # On dessine un camembert
+        rect = pygame.Rect(center_x - radius, center_y - radius, radius * 2, radius * 2)
+
+        # On commence à 0 et on réduit l'angle de fin
+        start_angle = math.radians(ouverture / 2)
+        end_angle = math.radians(360 - ouverture / 2)
+
+        if ouverture < 360:
+            # Dessine le corps jaune qui s'efface
+            pygame.draw.arc(self.screen, (255, 255, 0), rect, start_angle, end_angle, radius)
+
+            # Petit effet de particules : des petits points jaunes qui s'envolent
+            if timer < 30:
+                for i in range(38):
+                    p_offset = (30 - timer) * (i + 1) * 0.5
+                    pygame.draw.circle(self.screen, (255, 255, 0),
+                                       (center_x, int(center_y - p_offset)), 2)
 
 def _reset_game(config: ConfigLoader) -> tuple[Player, Engine]:
     # recrée un player et un engine tout frais pour une nouvelle partie
@@ -416,6 +448,7 @@ def _reset_game(config: ConfigLoader) -> tuple[Player, Engine]:
     engine: Engine = Engine(0, config, player)
     engine.load_level(0)
     return player, engine
+
 
 
 def main() -> None:

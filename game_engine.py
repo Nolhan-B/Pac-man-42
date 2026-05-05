@@ -20,6 +20,8 @@ class Engine():
         self.is_paused: bool = False
         self.current_level: Level = None
         self.invincibility_timer = 0
+        self.dying = False
+        self.death_animation_timer = 60
         self.c_s: int = 30  # mis a jour depuis le main apres init
 
     def load_level(self, level_id: int) -> None:
@@ -67,7 +69,8 @@ class Engine():
         elif direction == Direction.EAST:
             offset_x = progress * self.c_s
 
-        return px * self.c_s + offset_x + self.c_s // 2, py * self.c_s + offset_y + self.c_s // 2
+        return (px * self.c_s + offset_x +
+                self.c_s // 2, py * self.c_s + offset_y + self.c_s // 2)
 
     def _get_visual_pos_ghost(self, ghost: "Ghost") -> tuple[float, float]:
         # calcule la position visuelle du ghost en pixels (sans offset maze)
@@ -88,7 +91,8 @@ class Engine():
             elif ghost.direction == Direction.EAST:
                 offset_x = -dist_restante
 
-        return gx * self.c_s + offset_x + self.c_s // 2, gy * self.c_s + offset_y + self.c_s // 2
+        return (gx * self.c_s + offset_x +
+                self.c_s // 2, gy * self.c_s + offset_y + self.c_s // 2)
 
     def take_pac_gum(self) -> None:
         y: int = self.player.get_pos_y()
@@ -144,8 +148,9 @@ class Engine():
     def _handle_collision(self, ghost: "Ghost") -> None:
         if self.cheat_invincible is False:
             if ghost._state == State.CHASE:
-                if self.invincibility_timer <= 0:
-                    self.invincibility_timer = 180
+                if self.invincibility_timer <= 0 and not self.dying:
+                    self.dying = True
+                    self.death_animation_timer = 60
                     self.player.lose_life()
                     self._check_loose()
 
@@ -157,9 +162,22 @@ class Engine():
         if not self.running or self.is_paused:
             return
 
+        if self.dying:
+            self.death_animation_timer -= 1
+            if self.death_animation_timer <= 0:
+                # animation fini on respawn
+                mid_x = self.current_level.width // 2
+                mid_y = self.current_level.height // 2
+                self.player.current_direction = None
+                self.player.next_direction = None
+                self.player.set_position(mid_x, mid_y)
+                self._spawn_ghosts()
+                self.invincibility_timer = 120
+                self.dying = False
+            return
+
         if self.invincibility_timer > 0:
             self.invincibility_timer -= 1
-
         layout = self.current_level.layout
         self.player.update_player(layout)
 
