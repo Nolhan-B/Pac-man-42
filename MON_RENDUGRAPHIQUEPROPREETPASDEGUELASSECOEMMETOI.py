@@ -104,8 +104,8 @@ class Renderer:
         for ghost in engine.ghosts:
             self.draw_ghost(ghost, ox, oy)
         if getattr(engine, 'dying', False):
-            self.draw_death_animation(engine.player,
-                                      engine.death_animation_timer, ox, oy)
+            if self.draw_death_animation(engine, engine.player, engine.death_animation_timer, ox, oy) is True:
+                engine.life_just_lost = True
         else:
             # On ne dessine le Pac-Man normal que s'il est vivant
             self.draw_pac_man(engine.player, engine.current_level.layout, ox, oy,
@@ -163,7 +163,7 @@ class Renderer:
         overlay.fill((0, 0, 0, 140))
         self.screen.blit(overlay, (0, 0))
 
-        label: str = str(countdown) if countdown > 0 else "GO !"
+        label: str = str("Ready?") if countdown > 0 else "GO !"
         text: pygame.Surface = self.font_big.render(
             label, True, (255, 220, 0)
         )
@@ -426,7 +426,7 @@ class Renderer:
             y = 150 + i * 40
             self.screen.blit(text, (x, y))
 
-    def draw_death_animation(self, player: Player, timer: int, maze_ox: int, maze_oy: int) -> None:
+    def draw_death_animation(self, engine: Engine, player: Player, timer: int, maze_ox: int, maze_oy: int) -> bool:
         # Le timer descend de 60 à 0
         ouverture = (60 - timer) * 6 
 
@@ -445,6 +445,8 @@ class Renderer:
         if ouverture < 360:
             # Dessine le corps jaune qui s'efface
             pygame.draw.arc(self.screen, (255, 255, 0), rect, start_angle, end_angle, radius)
+        
+        return timer == 1
 
 def _reset_game(config: ConfigLoader) -> tuple[Player, Engine]:
     # recrée un player et un engine tout frais pour une nouvelle partie
@@ -511,7 +513,7 @@ def main() -> None:
                     elif event.key == pygame.K_RETURN:
                         if menu_selection == 0:
                             player, engine = _reset_game(config)
-                            countdown = 3
+                            countdown = 1
                             frame_timer = 0
                             game_state = GameState.COUNTDOWN
                         elif menu_selection == 1:
@@ -586,6 +588,11 @@ def main() -> None:
             engine.run()
             if not engine.running:
                 game_state = GameState.GAME_OVER
+            elif engine.life_just_lost:
+                engine.life_just_lost = False
+                countdown = 3
+                frame_timer = 0
+                game_state = GameState.COUNTDOWN
             renderer.draw_all(engine, WINDOW_W, game_state, countdown, show_cheats, cheats)
 
         elif game_state == GameState.GAME_OVER:

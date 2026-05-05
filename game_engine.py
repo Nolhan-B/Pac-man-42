@@ -23,6 +23,8 @@ class Engine():
         self.dying = False
         self.death_animation_timer = 60
         self.c_s: int = 30  # mis a jour depuis le main apres init
+        self.life_just_lost: bool = False
+        self.level_just_changed: bool = False
 
     def load_level(self, level_id: int) -> None:
         self.current_level = Level(level_id, self.config)
