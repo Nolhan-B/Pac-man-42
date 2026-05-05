@@ -160,7 +160,7 @@ class Renderer:
             title = self.font_big.render("PAC-MAN", True, (255, 220, 0))
             self.screen.blit(title, ((window_w - title.get_width()) // 2, window_h // 4))
 
-        options: list[str] = ["Jouer", "Highscores", "Quitter"]
+        options: list[str] = ["Play", "Highscores", "Instructions", "Exit"]
         for i, option in enumerate(options):
             color = (255, 220, 0) if i == selection else (255, 255, 255)
             prefix = "> " if i == selection else "  "
@@ -474,6 +474,44 @@ class Renderer:
         
         return timer == 1
 
+    def draw_instructions(self, window_w: int, window_h: int) -> None:
+        self.screen.fill((0, 0, 0))
+
+        title = self.font_big.render("INSTRUCTIONS", True, (255, 220, 0))
+        self.screen.blit(title, ((window_w - title.get_width()) // 2, 40))
+
+        lines = [
+            ("GOAL", (255, 220, 0)),
+            ("Eat all pac-gums to complete the level.", (255, 255, 255)),
+            ("Avoid ghosts or eat a super-gum to turn them edible.", (255, 255, 255)),
+            ("", None),
+            ("CONTROLS", (255, 220, 0)),
+            ("Arrow keys  ->  Move Pac-Man", (255, 255, 255)),
+            ("P / ESC  ->  Pause", (255, 255, 255)),
+            ("TAB  ->  Show cheats panel", (255, 255, 255)),
+            ("", None),
+            ("CHEATS", (255, 220, 0)),
+            ("I  ->  Invincibility", (255, 255, 255)),
+            ("F  ->  Freeze ghosts", (255, 255, 255)),
+            ("S  ->  Speed boost", (255, 255, 255)),
+            ("N  ->  Skip to next level", (255, 255, 255)),
+            ("V  ->  +1 life", (255, 255, 255)),
+        ]
+
+        y = 160
+        for text, color in lines:
+            if not text:
+                y += 15
+                continue
+            surf = self.font.render(text, True, color)
+            self.screen.blit(surf, ((window_w - surf.get_width()) // 2, y))
+            y += 35
+
+        hint = self.font.render("ESC / ENTER to go back", True, (100, 100, 100))
+        self.screen.blit(hint, ((window_w - hint.get_width()) // 2, window_h - 50))
+
+        pygame.display.flip()
+
 def _reset_game(config: ConfigLoader) -> tuple[Player, Engine]:
     # recrée un player et un engine tout frais pour une nouvelle partie
     player: Player = Player(config)
@@ -533,9 +571,9 @@ def main() -> None:
 
                 if game_state == GameState.MENU:
                     if event.key == pygame.K_UP:
-                        menu_selection = (menu_selection - 1) % 3
+                        menu_selection = (menu_selection - 1) % 4
                     elif event.key == pygame.K_DOWN:
-                        menu_selection = (menu_selection + 1) % 3
+                        menu_selection = (menu_selection + 1) % 4
                     elif event.key == pygame.K_RETURN:
                         if menu_selection == 0:
                             player, engine = _reset_game(config)
@@ -545,8 +583,14 @@ def main() -> None:
                         elif menu_selection == 1:
                             pass  # highscores, a implementer
                         elif menu_selection == 2:
+                            game_state = GameState.INSTRUCTIONS
+                        elif menu_selection == 3:
                             pygame.quit()
                             sys.exit()
+
+                elif game_state == GameState.INSTRUCTIONS:
+                    if event.key == pygame.K_ESCAPE or event.key == pygame.K_RETURN:
+                        game_state = GameState.MENU
 
                 elif game_state == GameState.PLAYING:
                     if event.key == pygame.K_TAB:
@@ -582,6 +626,9 @@ def main() -> None:
 
         if game_state == GameState.MENU:
             renderer.draw_menu(WINDOW_W, WINDOW_H, menu_selection)
+
+        elif game_state == GameState.INSTRUCTIONS:
+            renderer.draw_instructions(WINDOW_W, WINDOW_H)
 
         elif game_state == GameState.COUNTDOWN:
             frame_timer += 1

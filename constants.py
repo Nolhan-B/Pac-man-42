@@ -12,6 +12,7 @@ class GameState(Enum):
     PLAYING = auto()
     GAME_OVER = auto()
     MENU = auto()
+    INSTRUCTIONS = auto()
 
 
 class Direction(Enum):
