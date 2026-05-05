@@ -87,10 +87,36 @@ class Renderer:
             logger.warning("Banner PNG not found.")
             self.banner_img = None
         try:
-            self.instruction_banner_img = pygame.image.load("assets/instruction_banner.png").convert_alpha()
+            self.instruction_banner = pygame.image.load("assets/instruction_banner.png").convert_alpha()
         except Exception:
             logger.warning("Instruction banner PNG not found.")
-            self.instruction_banner_img = None
+            self.instruction_banner = None
+        try:
+
+            img = pygame.image.load("assets/game_over_banner.png").convert_alpha()
+            target_w = self.screen.get_width() * 0.7
+            ratio = target_w / img.get_width()
+            target_h = int(img.get_height() * ratio)
+            self.banner_game_over = pygame.transform.smoothscale(img, (int(target_w), target_h))     
+        except Exception:
+            logger.warning("Game Over banner PNG not found.")
+            self.banner_game_over = None
+        try:
+            ready_img = pygame.image.load("assets/ready.png").convert_alpha()
+            go_img = pygame.image.load("assets/go.png").convert_alpha()
+            target_w = self.screen.get_width() * 0.5
+            ratio_r = target_w / ready_img.get_width()
+            self.banner_ready = pygame.transform.smoothscale(
+                ready_img, (int(target_w), int(ready_img.get_height() * ratio_r))
+            )
+            ratio_g = target_w / go_img.get_width()
+            self.banner_go = pygame.transform.smoothscale(
+                go_img, (int(target_w), int(go_img.get_height() * ratio_g))
+            )
+        except Exception:
+            logger.warning("Countdown banners not found.")
+            self.banner_ready = None
+            self.banner_go = None
 
     def _get_maze_offset(self, engine: Engine,
                          window_w: int) -> tuple[int, int]:
@@ -190,41 +216,70 @@ class Renderer:
         pygame.display.flip()
 
     def _draw_countdown(self, countdown: int, window_w: int) -> None:
+
         overlay: pygame.Surface = pygame.Surface(
             self.screen.get_size(), pygame.SRCALPHA
         )
         overlay.fill((0, 0, 0, 140))
         self.screen.blit(overlay, (0, 0))
+        current_banner = self.banner_ready if countdown > 0 else self.banner_go
+        fallback_label = "Ready?" if countdown > 0 else "GO !"
 
-        label: str = str("Ready?") if countdown > 0 else "GO !"
-        text: pygame.Surface = self.font_big.render(
-            label, True, (255, 220, 0)
-        )
-        x = (window_w - text.get_width()) // 2
-        y = (self.screen.get_height() - text.get_height()) // 2
-        self.screen.blit(text, (x, y))
+        if current_banner:
+            x = (window_w - current_banner.get_width()) // 2
+            y = (self.screen.get_height() - current_banner.get_height()) // 2
+            self.screen.blit(current_banner, (x, y))
+        else:
+            text: pygame.Surface = self.font_big.render(
+                fallback_label, True, (255, 220, 0)
+            )
+            x = (window_w - text.get_width()) // 2
+            y = (self.screen.get_height() - text.get_height()) // 2
+            self.screen.blit(text, (x, y))
+    # def _draw_countdown(self, countdown: int, window_w: int) -> None:
+    #     overlay: pygame.Surface = pygame.Surface(
+    #         self.screen.get_size(), pygame.SRCALPHA
+    #     )
+    #     overlay.fill((0, 0, 0, 140))
+    #     self.screen.blit(overlay, (0, 0))
+
+    #     label: str = str("Ready?") if countdown > 0 else "GO !"
+    #     text: pygame.Surface = self.font_big.render(
+    #         label, True, (255, 220, 0)
+    #     )
+    #     x = (window_w - text.get_width()) // 2
+    #     y = (self.screen.get_height() - text.get_height()) // 2
+    #     self.screen.blit(text, (x, y))
 
     def _draw_game_over(self, window_w: int) -> None:
-        overlay: pygame.Surface = pygame.Surface(
-            self.screen.get_size(), pygame.SRCALPHA
-        )
+
+        overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 160))
         self.screen.blit(overlay, (0, 0))
 
-        text: pygame.Surface = self.font_big.render(
-            "GAME OVER", True, (255, 50, 50)
-        )
-        x = (window_w - text.get_width()) // 2
-        y = (self.screen.get_height() - text.get_height()) // 2
-        self.screen.blit(text, (x, y))
+        next_y = 0
 
-        sub: pygame.Surface = self.font.render(
+        if self.banner_game_over:
+            bx = (window_w - self.banner_game_over.get_width()) // 2
+            by = (self.screen.get_height() - self.banner_game_over.get_height()) // 2
+            self.screen.blit(self.banner_game_over, (bx, by))
+            # Le prochain texte sera sous l'image
+            next_y = by + self.banner_game_over.get_height() + 20
+        else:
+
+            text = self.font_big.render("GAME OVER", True, (255, 50, 50))
+            tx = (window_w - text.get_width()) // 2
+            ty = (self.screen.get_height() - text.get_height()) // 2
+            self.screen.blit(text, (tx, ty))
+            next_y = ty + text.get_height() + 20
+
+        # 3. Le texte d'instruction (Unifié pour éviter les répétitions)
+        sub = self.font.render( 
             "Appuie sur ENTREE pour revenir au menu",
-            True, (255, 255, 255)
+            True, (255, 255, 255) 
         )
-        self.screen.blit(
-            sub, ((window_w - sub.get_width()) // 2, y + 100)
-        )
+        sub_x = (window_w - sub.get_width()) // 2
+        self.screen.blit(sub, (sub_x, next_y))
 
     def draw_pac_man(self, player, layout, maze_ox, maze_oy,
                      invincibility_timer):
@@ -486,17 +541,17 @@ class Renderer:
             self.screen.blit(self.menu_bg, (0, 0))
         else:
             self.screen.fill((0, 0, 0))
- 
+
         overlay = pygame.Surface((window_w, window_h), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180)) # Un peu plus sombre pour faire ressortir le texte
         self.screen.blit(overlay, (0, 0))
 
         y = 20
-        if self.instruction_banner_img:
+        if self.instruction_banner:
             target_w = int(window_w * 0.7)
-            ratio = target_w / self.instruction_banner_img.get_width()
-            target_h = int(self.instruction_banner_img.get_height() * ratio)
-            scaled = pygame.transform.smoothscale(self.instruction_banner_img, (target_w, target_h))
+            ratio = target_w / self.instruction_banner.get_width()
+            target_h = int(self.instruction_banner.get_height() * ratio)
+            scaled = pygame.transform.smoothscale(self.instruction_banner, (target_w, target_h))
             self.screen.blit(scaled, ((window_w - target_w) // 2, y))
             y += target_h + 30
         else:
