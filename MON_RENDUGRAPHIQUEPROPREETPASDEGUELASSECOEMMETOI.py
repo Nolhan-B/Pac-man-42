@@ -590,7 +590,7 @@ def main() -> None:
                 game_state = GameState.GAME_OVER
             elif engine.life_just_lost:
                 engine.life_just_lost = False
-                countdown = 3
+                countdown = 1
                 frame_timer = 0
                 game_state = GameState.COUNTDOWN
             renderer.draw_all(engine, WINDOW_W, game_state, countdown, show_cheats, cheats)
