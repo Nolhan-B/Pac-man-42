@@ -25,16 +25,27 @@ class Renderer:
             "Arial", 80, bold=True
         )
         self.font_menu: pygame.font.Font = pygame.font.SysFont("Arial", 40)
-        try:
-            self.pacman_sprite: pygame.Surface = pygame.image.load(
-                "assets/pacman.png"
-            ).convert_alpha()
-        except Exception:
-            logger.warning(
-                "pacman sprite not loaded, using yellow rect instead."
-            )
-            self.pacman_sprite = pygame.Surface((30, 30))
-            self.pacman_sprite.fill((255, 255, 0))
+        self.tick: int = 0
+        FRAMES = 8
+        self.pacman_frames = [
+            pygame.image.load(f"assets/pacman_{i}.png").convert_alpha()
+            for i in range(FRAMES)
+        ]
+        self.pacman_frames_west = [
+            pygame.image.load(f"assets/pacman_west_{i}.png").convert_alpha()
+            for i in range(FRAMES)
+        ]
+
+        # try:
+        #     self.pacman_sprite: pygame.Surface = pygame.image.load(
+        #         "assets/pacman.png"
+        #     ).convert_alpha()
+        # except Exception:
+        #     logger.warning(
+        #         "pacman sprite not loaded, using yellow rect instead."
+        #     )
+        #     self.pacman_sprite = pygame.Surface((30, 30))
+        #     self.pacman_sprite.fill((255, 255, 0))
         for color in ghost_list:
             try:
                 img = pygame.image.load(
@@ -186,32 +197,21 @@ class Renderer:
         self.screen.blit(
             sub, ((window_w - sub.get_width()) // 2, y + 100)
         )
-    
-    def draw_pac_man(
-        self,
-        player: Player,
-        layout: list[list[int]],
-        maze_ox: int,
-        maze_oy: int,
-        invincibility_timer: int
-    ) -> None:
-
+    def draw_pac_man(self, player, layout, maze_ox, maze_oy, invincibility_timer):
         if invincibility_timer > 0 and (invincibility_timer // 4) % 2 == 0:
             return
-
         px, py = player.get_position()
         if px is None:
             return
 
         offset_x: float = 0
         offset_y: float = 0
-
-        can_move: bool = (
+        can_move = (
             player.current_direction is not None
             and player._can_move(player.current_direction, layout)
         )
         if can_move:
-            progress: float = player.move_timer / player.speed
+            progress = player.move_timer / player.speed
             if player.current_direction == Direction.NORTH:
                 offset_y = -progress * self.c_s
             elif player.current_direction == Direction.SOUTH:
@@ -221,21 +221,83 @@ class Renderer:
             elif player.current_direction == Direction.EAST:
                 offset_x = progress * self.c_s
 
-        sprite_resized: pygame.Surface = pygame.transform.smoothscale(
-            self.pacman_sprite, (self.c_s, self.c_s)
-        )
-        rotations: dict[Direction, int] = {
-            Direction.EAST: 0, Direction.NORTH: 90,
-            Direction.WEST: 180, Direction.SOUTH: 270
-        }
-        angle: int = rotations.get(player.current_direction, 0)
-        sprite_final: pygame.Surface = pygame.transform.rotate(
-            sprite_resized, angle
-        )
+        # ping-pong 0->7->0
+        self.tick += 1
+        FRAMES = 8
+        t = self.tick % (FRAMES * 2)
+        frame_idx = t if t < FRAMES else (FRAMES * 2 - 1 - t)
 
-        pixel_x: float = px * self.c_s + maze_ox + offset_x
-        pixel_y: float = py * self.c_s + maze_oy + offset_y
-        self.screen.blit(sprite_final, (pixel_x, pixel_y))
+        rotations = {
+            Direction.EAST:  0,
+            Direction.NORTH: 90,
+            Direction.SOUTH: 270,
+        }
+
+        if player.current_direction == Direction.WEST:
+            # frame miroir, pas de rotation
+            sprite = pygame.transform.smoothscale(
+                self.pacman_frames_west[frame_idx], (self.c_s, self.c_s)
+            )
+        else:
+            sprite = pygame.transform.smoothscale(
+                self.pacman_frames[frame_idx], (self.c_s, self.c_s)
+            )
+            angle = rotations.get(player.current_direction, 0)
+            if angle:
+                sprite = pygame.transform.rotate(sprite, angle)
+
+        pixel_x = px * self.c_s + maze_ox + offset_x
+        pixel_y = py * self.c_s + maze_oy + offset_y
+        self.screen.blit(sprite, (pixel_x, pixel_y))
+    # def draw_pac_man(
+    #     self,
+    #     player: Player,
+    #     layout: list[list[int]],
+    #     maze_ox: int,
+    #     maze_oy: int,
+    #     invincibility_timer: int
+    # ) -> None:
+
+    #     if invincibility_timer > 0 and (invincibility_timer // 4) % 2 == 0:
+    #         return
+
+    #     px, py = player.get_position()
+    #     if px is None:
+    #         return
+
+    #     offset_x: float = 0
+    #     offset_y: float = 0
+
+    #     can_move: bool = (
+    #         player.current_direction is not None
+    #         and player._can_move(player.current_direction, layout)
+    #     )
+    #     if can_move:
+    #         progress: float = player.move_timer / player.speed
+    #         if player.current_direction == Direction.NORTH:
+    #             offset_y = -progress * self.c_s
+    #         elif player.current_direction == Direction.SOUTH:
+    #             offset_y = progress * self.c_s
+    #         elif player.current_direction == Direction.WEST:
+    #             offset_x = -progress * self.c_s
+    #         elif player.current_direction == Direction.EAST:
+    #             offset_x = progress * self.c_s
+
+    #     sprite_resized: pygame.Surface = pygame.transform.smoothscale(
+    #         self.pacman_sprite, (self.c_s, self.c_s)
+    #     )
+    #     rotations: dict[Direction, int] = {
+    #         Direction.EAST: 0, Direction.NORTH: 90,
+    #         Direction.WEST: 180, Direction.SOUTH: 270
+    #     }
+    #     angle: int = rotations.get(player.current_direction, 0)
+    #     sprite_final: pygame.Surface = pygame.transform.rotate(
+    #         sprite_resized, angle
+    #     )
+
+    #     pixel_x: float = px * self.c_s + maze_ox + offset_x
+    #     pixel_y: float = py * self.c_s + maze_oy + offset_y
+    #     self.screen.blit(sprite_final, (pixel_x, pixel_y))
 
     def _draw_maze(
         self, layout: list[list[int]], maze_ox: int, maze_oy: int
