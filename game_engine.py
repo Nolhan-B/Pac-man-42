@@ -172,7 +172,7 @@ class Engine():
                 self.player.next_direction = None
                 self.player.set_position(mid_x, mid_y)
                 self._spawn_ghosts()
-                self.invincibility_timer = 120
+                self.invincibility_timer = 90
                 self.dying = False
             return
 

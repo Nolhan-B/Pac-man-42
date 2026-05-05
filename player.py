@@ -108,22 +108,23 @@ class Player:
     def update_player(self, layout: list[list[int]]) -> None:
         # 1. Le Demi-Tour sécurisé (Zéro passe-muraille)
         if self.current_direction and self.next_direction == OPPOSITES.get(self.current_direction):
-            # On recule de manière fluide UNIQUEMENT si on n'était pas bloqué contre un mur
+
             if self.move_timer > 0 and self._can_move(self.current_direction, layout):
                 self._execute_move()
                 self.move_timer = self.speed - self.move_timer
             else:
                 # Si on était bloqué (timer à 0), on pivote juste sur place
                 self.move_timer = 0.0
-                
+
             self.current_direction = self.next_direction
             self.next_direction = None
             return
 
         self.move_timer += 1.0
-        
+
         if self.move_timer >= self.speed:
-            if self.current_direction and self._can_move(self.current_direction, layout):
+            if self.current_direction and self._can_move(self.current_direction,
+                                                         layout):
                 self._execute_move()
 
             if self._can_move(self.next_direction, layout):
