@@ -177,9 +177,12 @@ class Engine():
 
         if self.time_left > 0:
             self.time_left -= 1/60
-        else:
+        elif not self.dying:
             self.time_left = 0
-            self.running = False
+            self.dying = True
+            self.death_animation_timer = 60
+            self.player.lose_life()
+            self._check_loose()
 
         if self.dying:
             self.death_animation_timer -= 1
@@ -193,6 +196,7 @@ class Engine():
                 self._spawn_ghosts()
                 self.invincibility_timer = 90
                 self.dying = False
+                self.start_level_timer()
             return
 
         if self.invincibility_timer > 0:
