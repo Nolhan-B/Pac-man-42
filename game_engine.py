@@ -29,7 +29,7 @@ class Engine():
         self.time_left: float = 0.0
 
     def start_level_timer(self):
-        time_per_tile = 0.060
+        time_per_tile = 1.6
         area = self.current_level.width * self.current_level.height
         self.level_time_limit = area * time_per_tile
         self.time_left = self.level_time_limit
