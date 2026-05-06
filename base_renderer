@@ -22,4 +22,4 @@ class BaseRenderer(ABC):
 class MazeRenderer(BaseRenderer):
     def __init__(self, screen: pygame.Surface, assets: AssetManager) -> None:
         super().__init__(screen, assets)
-        
+        00
