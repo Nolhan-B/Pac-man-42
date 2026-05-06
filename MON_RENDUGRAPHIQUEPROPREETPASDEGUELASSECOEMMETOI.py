@@ -21,14 +21,13 @@ class Renderer:
         self.ghost_sprites = {}
         ghost_list = ["red", "blue", "yellow", "pink"]
         pygame.font.init()
-        self.font: pygame.font.Font = pygame.font.SysFont("Arial", 24)
-        self.font_big: pygame.font.Font = pygame.font.SysFont(
-            "Arial", 80, bold=True
-        )
-        self.font_menu: pygame.font.Font = pygame.font.SysFont("Arial", 40)
+        _font_path = "assets/PressStart2P.ttf"
+        self.font      = pygame.font.Font(_font_path, 14)
+        self.font_mid  = pygame.font.Font(_font_path, 18)
+        self.font_menu = pygame.font.Font(_font_path, 22)
+        self.font_big  = pygame.font.Font(_font_path, 36)
+        
         self.tick: int = 0
-        self.font = pygame.font.SysFont("Arial", 28)
-        self.font_mid: pygame.font.Font = pygame.font.SysFont("Arial", 32, bold=True)
         FRAMES = 8
         try:
             self.pacman_frames = [
@@ -620,27 +619,26 @@ class Renderer:
         self.screen.fill((0, 0, 0))
 
         title = self.font_big.render("HIGHSCORES", True, (255, 220, 0))
-        self.screen.blit(title, ((window_w - title.get_width()) // 2, 40))
+        self.screen.blit(title, ((window_w - title.get_width()) // 2, 30))
 
-        # colonnes fixes centrees sur la fenetre
-        col_rank  = window_w // 2 - 250
-        col_name  = window_w // 2 - 150
-        col_score = window_w // 2 + 200
+        col_rank  = window_w // 2 - 280
+        col_name  = window_w // 2 - 180
+        col_score = window_w // 2 + 280
 
-        header_rank  = self.font.render("#",     True, (150, 150, 150))
-        header_name  = self.font.render("NAME",  True, (150, 150, 150))
-        header_score = self.font.render("SCORE", True, (150, 150, 150))
-        self.screen.blit(header_rank,  (col_rank,  160))
-        self.screen.blit(header_name,  (col_name,  160))
-        self.screen.blit(header_score, (col_score - header_score.get_width(), 160))
+        header_rank  = self.font_mid.render("#",     True, (150, 150, 150))
+        header_name  = self.font_mid.render("NAME",  True, (150, 150, 150))
+        header_score = self.font_mid.render("SCORE", True, (150, 150, 150))
+        self.screen.blit(header_rank,  (col_rank, 110))
+        self.screen.blit(header_name,  (col_name, 110))
+        self.screen.blit(header_score, (col_score - header_score.get_width(), 110))
 
         pygame.draw.line(
             self.screen, (80, 80, 80),
-            (col_rank, 192), (col_score + 10, 192), 1
+            (col_rank, 138), (col_score + 10, 138), 1
         )
 
         if not scores:
-            empty = self.font_menu.render("No scores yet !", True, (100, 100, 100))
+            empty = self.font_menu.render("No scores yet!", True, (100, 100, 100))
             self.screen.blit(empty, ((window_w - empty.get_width()) // 2, window_h // 2))
         else:
             for i, entry in enumerate(scores):
@@ -653,19 +651,25 @@ class Renderer:
                 else:
                     color = (255, 255, 255)
 
-                y = 210 + i * 40
+                y = 150 + i * 52
 
-                rank_surf  = self.font.render(f"{i + 1}.", True, color)
-                name_surf  = self.font.render(entry.name,  True, color)
-                score_surf = self.font.render(str(entry.score), True, color)
+                # tronque si trop long
+                name_str  = entry.name[:10]
+                score_str = str(entry.score)
+                if len(score_str) > 8:
+                    score_str = score_str[:8] + ".."
+
+                rank_surf  = self.font_menu.render(f"{i + 1}.", True, color)
+                name_surf  = self.font_menu.render(name_str,   True, color)
+                score_surf = self.font_menu.render(score_str,  True, color)
 
                 self.screen.blit(rank_surf,  (col_rank, y))
                 self.screen.blit(name_surf,  (col_name, y))
-                # score aligne a droite sur col_score
                 self.screen.blit(score_surf, (col_score - score_surf.get_width(), y))
 
-        hint = self.font.render("Press [SPACE] to return to menu", True, (100, 100, 100))
-        self.screen.blit(hint, ((window_w - hint.get_width()) // 2, window_h - 60))
+        hint = self.font.render(
+            "Press [SPACE] to return to menu", True, (100, 100, 100))
+        self.screen.blit(hint, ((window_w - hint.get_width()) // 2, window_h - 50))
 
         pygame.display.flip()
 
