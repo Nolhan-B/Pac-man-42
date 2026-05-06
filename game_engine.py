@@ -29,7 +29,7 @@ class Engine():
         self.time_left: float = 0.0
 
     def start_level_timer(self):
-        time_per_tile = 1.6
+        time_per_tile = 0.060
         area = self.current_level.width * self.current_level.height
         self.level_time_limit = area * time_per_tile
         self.time_left = self.level_time_limit
@@ -177,7 +177,7 @@ class Engine():
 
         if self.time_left > 0:
             self.time_left -= 1/60
-        elif not self.dying:
+        elif not self.dying and not self.cheat_invincible:
             self.time_left = 0
             self.dying = True
             self.death_animation_timer = 60
