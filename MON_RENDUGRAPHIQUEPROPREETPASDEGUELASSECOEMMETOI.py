@@ -375,31 +375,50 @@ class Renderer:
 
     def _draw_hud(self, engine: Engine, window_w: int) -> None:
         footer_y: int = self.screen.get_height() - self.footer + 10
-        score_text: pygame.Surface = self.font.render(
+
+        seconds = max(0, int(engine.time_left))
+        timer_color = (255, 255, 255)
+        # Clignotement rouge si moins de 10 secondes
+        if seconds < 10:
+            timer_color = (255, 0, 0) if (int(engine.time_left * 5) % 2 == 0) else (255, 255, 255)
+
+        timer_text = self.font.render(f"Time: {seconds}s", True, timer_color)
+
+        score_text = self.font.render(
             f"Score: {engine.player.score}", True, (255, 255, 255))
-        lives_text: pygame.Surface = self.font.render(
+        lives_text = self.font.render(
             f"Vies: {engine.player.lives}", True, (255, 255, 255))
-        level_text: pygame.Surface = self.font.render(
+        level_text = self.font.render(
             f"Level: {engine.level_id + 1}", True, (255, 255, 255))
+        spacing: int = 50
         total_width: int = (
             score_text.get_width()
+            + timer_text.get_width()
             + lives_text.get_width()
             + level_text.get_width()
+            + (spacing * 3)
         )
-        spacing: int = 60
-        total: int = total_width + spacing * 2
-        start_x: int = (window_w - total) // 2
+        start_x: int = (window_w - total_width) // 2
+        # Petit rappel des touches en haut à gauche
         hint = self.font.render(
             "Press [TAB] to display keybinds", True, (50, 50, 50))
         self.screen.blit(hint, (10, 10))
-        self.screen.blit(score_text, (start_x, footer_y))
-        self.screen.blit(
-            lives_text,
-            (start_x + score_text.get_width() + spacing, footer_y))
-        self.screen.blit(
-            level_text,
-            (start_x + score_text.get_width() + lives_text.get_width()
-             + spacing * 2, footer_y))
+        # Alignement horizontal des éléments du HUD
+        current_x = start_x
+        # Score
+        self.screen.blit(score_text, (current_x, footer_y))
+        current_x += score_text.get_width() + spacing
+
+        # Chronomètre
+        self.screen.blit(timer_text, (current_x, footer_y))
+        current_x += timer_text.get_width() + spacing
+
+        # Vies
+        self.screen.blit(lives_text, (current_x, footer_y))
+        current_x += lives_text.get_width() + spacing
+
+        # Niveau
+        self.screen.blit(level_text, (current_x, footer_y))
 
     def _draw_cheats_overlay(self, cheats: dict) -> None:
         overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)

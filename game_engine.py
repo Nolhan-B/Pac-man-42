@@ -25,6 +25,14 @@ class Engine():
         self.c_s: int = 30  # mis a jour depuis le main apres init
         self.life_just_lost: bool = False
         self.level_just_changed: bool = False
+        self.level_time_limit: float = 0.0
+        self.time_left: float = 0.0
+
+    def start_level_timer(self):
+        time_per_tile = 1.6
+        area = self.current_level.width * self.current_level.height
+        self.level_time_limit = area * time_per_tile
+        self.time_left = self.level_time_limit
 
     def load_level(self, level_id: int) -> None:
         self.current_level = Level(level_id, self.config)
@@ -32,6 +40,7 @@ class Engine():
         mid_y = self.current_level.height // 2
         self.player.set_position(mid_x, mid_y)
         self._spawn_ghosts()
+        self.start_level_timer()
 
     def next_level(self) -> None:
         self.level_id += 1
@@ -165,6 +174,12 @@ class Engine():
     def run(self) -> None:
         if not self.running or self.is_paused:
             return
+
+        if self.time_left > 0:
+            self.time_left -= 1/60
+        else:
+            self.time_left = 0
+            self.running = False
 
         if self.dying:
             self.death_animation_timer -= 1
