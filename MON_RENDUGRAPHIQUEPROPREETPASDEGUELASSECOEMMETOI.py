@@ -6,6 +6,7 @@ from player import Player
 from game_engine import Engine
 from parser import ConfigLoader
 import math
+from HighscoreManager import HighscoreManager, PlayerScore
 
 logger = logging.getLogger(__name__)
 
@@ -566,6 +567,107 @@ class Renderer:
 
         pygame.display.flip()
 
+    def draw_enter_name(
+        self, window_w: int, window_h: int, name: str, score: int
+    ) -> None:
+        self.screen.fill((0, 0, 0))
+
+        title = self.font_big.render("GAME OVER", True, (255, 50, 50))
+        self.screen.blit(
+            title, ((window_w - title.get_width()) // 2, window_h // 5)
+        )
+
+        score_text = self.font_menu.render(
+            f"Final score : {score}", True, (255, 220, 0)
+        )
+        self.screen.blit(
+            score_text,
+            ((window_w - score_text.get_width()) // 2, window_h // 5 + 100)
+        )
+
+        prompt = self.font_menu.render(
+            "Enter your name :", True, (255, 255, 255)
+        )
+        self.screen.blit(
+            prompt,
+            ((window_w - prompt.get_width()) // 2, window_h // 2 - 40)
+        )
+
+        # nom en cours de saisie avec curseur
+        display_name = name + "_"
+        name_text = self.font_menu.render(display_name, True, (255, 220, 0))
+        self.screen.blit(
+            name_text,
+            ((window_w - name_text.get_width()) // 2, window_h // 2 + 20)
+        )
+
+        hint = self.font.render(
+            "Press [RETURN] to validate | max 10 characters",
+            True, (100, 100, 100)
+        )
+        self.screen.blit(
+            hint, ((window_w - hint.get_width()) // 2, window_h - 60)
+        )
+
+        pygame.display.flip()
+
+    def draw_highscores(
+        self,
+        window_w: int,
+        window_h: int,
+        scores: list
+    ) -> None:
+        self.screen.fill((0, 0, 0))
+
+        title = self.font_big.render("HIGHSCORES", True, (255, 220, 0))
+        self.screen.blit(title, ((window_w - title.get_width()) // 2, 40))
+
+        # colonnes fixes centrees sur la fenetre
+        col_rank  = window_w // 2 - 250
+        col_name  = window_w // 2 - 150
+        col_score = window_w // 2 + 200
+
+        header_rank  = self.font.render("#",     True, (150, 150, 150))
+        header_name  = self.font.render("NAME",  True, (150, 150, 150))
+        header_score = self.font.render("SCORE", True, (150, 150, 150))
+        self.screen.blit(header_rank,  (col_rank,  160))
+        self.screen.blit(header_name,  (col_name,  160))
+        self.screen.blit(header_score, (col_score - header_score.get_width(), 160))
+
+        pygame.draw.line(
+            self.screen, (80, 80, 80),
+            (col_rank, 192), (col_score + 10, 192), 1
+        )
+
+        if not scores:
+            empty = self.font_menu.render("No scores yet !", True, (100, 100, 100))
+            self.screen.blit(empty, ((window_w - empty.get_width()) // 2, window_h // 2))
+        else:
+            for i, entry in enumerate(scores):
+                if i == 0:
+                    color = (255, 215, 0)
+                elif i == 1:
+                    color = (192, 192, 192)
+                elif i == 2:
+                    color = (205, 127, 50)
+                else:
+                    color = (255, 255, 255)
+
+                y = 210 + i * 40
+
+                rank_surf  = self.font.render(f"{i + 1}.", True, color)
+                name_surf  = self.font.render(entry.name,  True, color)
+                score_surf = self.font.render(str(entry.score), True, color)
+
+                self.screen.blit(rank_surf,  (col_rank, y))
+                self.screen.blit(name_surf,  (col_name, y))
+                # score aligne a droite sur col_score
+                self.screen.blit(score_surf, (col_score - score_surf.get_width(), y))
+
+        hint = self.font.render("Press [SPACE] to return to menu", True, (100, 100, 100))
+        self.screen.blit(hint, ((window_w - hint.get_width()) // 2, window_h - 60))
+
+        pygame.display.flip()
 
 def _reset_game(config: ConfigLoader) -> tuple[Player, Engine]:
     player: Player = Player(config)
@@ -588,7 +690,7 @@ def main() -> None:
 
     player, engine = _reset_game(config)
 
-    C_S: int = 30
+    C_S: int = 42
     max_w: int = max(lvl["width"] for lvl in config.levels)
     max_h: int = max(lvl["height"] for lvl in config.levels)
     WINDOW_W: int = max_w * C_S + 150
@@ -616,6 +718,10 @@ def main() -> None:
     pause_selection: int = 0
     confirm_selection: int = 1  # "No" par defaut
 
+    player_name: str = ""
+
+    highscore_manager = HighscoreManager(config.highscore_filename)
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -637,7 +743,7 @@ def main() -> None:
                             frame_timer = 0
                             game_state = GameState.COUNTDOWN
                         elif menu_selection == 1:
-                            pass  # highscores, a implementer
+                            game_state = GameState.HIGHSCORES
                         elif menu_selection == 2:
                             game_state = GameState.INSTRUCTIONS
                         elif menu_selection == 3:
@@ -711,10 +817,33 @@ def main() -> None:
 
                 elif game_state == GameState.GAME_OVER:
                     if event.key == pygame.K_RETURN:
+                        game_state = GameState.ENTER_NAME
+                
+                elif game_state == GameState.ENTER_NAME:
+                    if event.key == pygame.K_RETURN and len(player_name) > 0:
+                        print("saving score for", player_name)
+                        print("Current scores :", highscore_manager.scores)
+                        highscore_manager.add_score(PlayerScore(player_name, player.score))
+                        game_state = GameState.HIGHSCORES
+                        print("Scores are now :", highscore_manager.scores)
+                    elif event.key == pygame.K_BACKSPACE:
+                        player_name = player_name[:-1]
+                    elif len(player_name) < 10:
+                        # accepte seulement a-z et espace
+                        if event.key == pygame.K_SPACE:
+                            player_name += " "
+                        elif pygame.K_a <= event.key <= pygame.K_z:
+                            player_name += event.unicode
+                
+                elif game_state == GameState.HIGHSCORES:
+                    if event.key == pygame.K_SPACE:
                         game_state = GameState.MENU
-
+        
         if game_state == GameState.MENU:
             renderer.draw_menu(WINDOW_W, WINDOW_H, menu_selection)
+
+        if game_state == GameState.ENTER_NAME:
+            renderer.draw_enter_name(WINDOW_W, WINDOW_H, player_name, player.score)
 
         elif game_state == GameState.INSTRUCTIONS:
             renderer.draw_instructions(WINDOW_W, WINDOW_H)
@@ -760,6 +889,9 @@ def main() -> None:
         elif game_state == GameState.GAME_OVER:
             renderer.draw_all(
                 engine, WINDOW_W, game_state, countdown, show_cheats, cheats)
+
+        elif game_state == GameState.HIGHSCORES:
+            renderer.draw_highscores(WINDOW_W, WINDOW_H, highscore_manager.scores)
 
         clock.tick(60)
 

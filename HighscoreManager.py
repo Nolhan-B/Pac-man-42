@@ -39,15 +39,15 @@ class HighscoreManager:
                         self.scores.append(PlayerScore(e["name"], e["score"]))
                 except (KeyError, ValueError, TypeError):
                     logger.warning(f"Score with value {e["name"]} / {e["score"]} is"
-                                    " not valid and will not be append "
-                                    "to the globals highscores")
+                                   " not valid and will not be used "
+                                   "for highscores")
                 self.scores = sorted(self.scores, key=lambda e: e.score, reverse=True)[:10]
         except FileNotFoundError:
             logger.warning(f"Filepath {self.filepath} not found")
             self._save()
         except (json.JSONDecodeError, OSError):
             logger.warning(f"{self.filepath} is a malformed json")
-            logger.warning(f"Suppressing file content for safety...")
+            logger.warning("Suppressing file content for safety...")
             try:
                 open(self.filepath, 'w').close()
             except (PermissionError, OSError):

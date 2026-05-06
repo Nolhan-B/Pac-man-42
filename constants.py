@@ -15,6 +15,8 @@ class GameState(Enum):
     INSTRUCTIONS = auto()
     PAUSE = auto()
     PAUSE_CONFIRM = auto()
+    ENTER_NAME = auto()
+    HIGHSCORES = auto()
 
 
 class Direction(Enum):
