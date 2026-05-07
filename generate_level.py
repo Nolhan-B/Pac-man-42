@@ -19,7 +19,6 @@ class Level:
         self.width: int = len(self.layout[0]) if self.height > 0 else 0
         self._init_put_gum()
 
-    # Init method
     def _init_generator(self, level_id: int,
                         config: ConfigLoader) -> MazeGenerator:
 
