@@ -37,20 +37,32 @@ def main() -> None:
 
     renderer = Renderer(screen)
     renderer.c_s = C_S
-    
+
     highscore_manager = HighscoreManager(config.highscore_filename)
     player, engine = _reset_game(config)
     engine.c_s = C_S
-    
+
     clock = pygame.time.Clock()
     game_state = GameState.MENU
-    
+
     menu_selection, pause_selection = 0, 0
     confirm_selection = 1
     countdown, frame_timer = 1, 0
     player_name = ""
     show_cheats = False
     cheats: Dict[str, bool] = {"invincible": False, "freeze": False, "speed": False}
+
+    menu_selection, pause_selection = 0, 0
+    confirm_selection = 1
+    countdown, frame_timer = 1, 0
+    player_name = ""
+    show_cheats = False
+    cheats: Dict[str, bool] = {
+        "invincible": False,
+        "freeze": False,
+        "speed": False
+    }
+    is_fullscreen = False  # Track l'état de l'écran
 
     while True:
         win_w, win_h = screen.get_size()
@@ -62,7 +74,7 @@ def main() -> None:
 
             if event.type == pygame.VIDEORESIZE:
                 renderer.assets.load_all((event.w, event.h))
-                renderer.maze_p.maze_surface = None  # Recalcul du fond
+                renderer.maze_p.maze_surface = None
 
             if event.type == pygame.KEYDOWN:
                 if game_state == GameState.MENU:
@@ -81,7 +93,17 @@ def main() -> None:
                         elif menu_selection == 1:  # HIGHSCORES
                             game_state = GameState.HIGHSCORES
                         elif menu_selection == 2:  # FULLSCREEN
-                            pygame.display.toggle_fullscreen()
+                            is_fullscreen = not is_fullscreen
+                            if is_fullscreen:
+                                screen = pygame.display.set_mode(
+                                    (0, 0), pygame.FULLSCREEN
+                                )
+                            else:
+                                screen = pygame.display.set_mode(
+                                    (WINDOW_W, WINDOW_H), pygame.RESIZABLE
+                                )
+                            renderer.screen = screen
+                            renderer.assets.load_all(screen.get_size())
                             renderer.maze_p.maze_surface = None
                         elif menu_selection == 3:  # INSTRUCTIONS
                             game_state = GameState.INSTRUCTIONS
@@ -155,7 +177,8 @@ def main() -> None:
 
                 elif game_state == GameState.ENTER_NAME:
                     if event.key == pygame.K_RETURN and len(player_name) > 0:
-                        highscore_manager.add_score(PlayerScore(player_name, player.score))
+                        ps = PlayerScore(player_name, player.score)
+                        highscore_manager.add_score(ps)
                         game_state = GameState.HIGHSCORES
                     elif event.key == pygame.K_BACKSPACE:
                         player_name = player_name[:-1]
@@ -166,11 +189,13 @@ def main() -> None:
                             player_name += event.unicode
 
                 elif game_state == GameState.HIGHSCORES:
-                    if event.key in (pygame.K_ESCAPE, pygame.K_SPACE, pygame.K_RETURN):
+                    exit_keys = (
+                        pygame.K_ESCAPE, pygame.K_SPACE, pygame.K_RETURN
+                    )
+                    if event.key in exit_keys:
                         game_state = GameState.MENU
                         player_name = ""
 
-        # RENDU GRAPHIQUE
         if game_state == GameState.MENU:
             renderer.draw_menu(win_w, win_h, menu_selection)
 
@@ -187,28 +212,36 @@ def main() -> None:
                 countdown -= 1
             if countdown < 0:
                 game_state = GameState.PLAYING
-            renderer.draw_game(engine, game_state, countdown, frame_timer, show_cheats, cheats)
+            renderer.draw_game(
+                engine, game_state, countdown,
+                frame_timer, show_cheats, cheats
+            )
 
         elif game_state == GameState.PLAYING:
             engine.cheat_invincible = cheats["invincible"]
             engine.cheat_speed = cheats["speed"]
             engine.cheat_freeze = cheats["freeze"]
             engine.run()
-            
+
             if not engine.running:
                 game_state = GameState.GAME_OVER
             elif getattr(engine, 'life_just_lost', False):
                 engine.life_just_lost = False
-                countdown, frame_timer, game_state = 1, 0, GameState.COUNTDOWN
+                countdown, frame_timer = 1, 0
+                game_state = GameState.COUNTDOWN
             elif getattr(engine, 'level_just_changed', False):
                 engine.level_just_changed = False
-                countdown, frame_timer, game_state = 1, 0, GameState.COUNTDOWN
+                countdown, frame_timer = 1, 0
+                game_state = GameState.COUNTDOWN
                 renderer.maze_p.maze_surface = None
                 # On vide la mémoire de Pac-Man !
                 player.current_direction = None
                 player.next_direction = None
 
-            renderer.draw_game(engine, game_state, countdown, frame_timer, show_cheats, cheats)
+            renderer.draw_game(
+                engine, game_state, countdown,
+                frame_timer, show_cheats, cheats
+            )
 
         elif game_state == GameState.PAUSE:
             renderer.draw_pause(win_w, win_h, pause_selection, False)
@@ -217,7 +250,10 @@ def main() -> None:
             renderer.draw_pause(win_w, win_h, confirm_selection, True)
 
         elif game_state == GameState.GAME_OVER:
-            renderer.draw_game(engine, game_state, countdown, frame_timer, show_cheats, cheats)
+            renderer.draw_game(
+                engine, game_state, countdown,
+                frame_timer, show_cheats, cheats
+            )
 
         elif game_state == GameState.HIGHSCORES:
             renderer.draw_highscores(win_w, win_h, highscore_manager.scores)
