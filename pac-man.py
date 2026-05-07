@@ -54,7 +54,7 @@ def main() -> None:
 
     while True:
         win_w, win_h = screen.get_size()
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -62,27 +62,30 @@ def main() -> None:
 
             if event.type == pygame.VIDEORESIZE:
                 renderer.assets.load_all((event.w, event.h))
-                renderer.maze_p.maze_surface = None  # Recalcul du fond si on redimensionne
+                renderer.maze_p.maze_surface = None  # Recalcul du fond
 
             if event.type == pygame.KEYDOWN:
                 if game_state == GameState.MENU:
                     if event.key == pygame.K_UP:
-                        menu_selection = (menu_selection - 1) % 4
+                        menu_selection = (menu_selection - 1) % 5
                     elif event.key == pygame.K_DOWN:
-                        menu_selection = (menu_selection + 1) % 4
+                        menu_selection = (menu_selection + 1) % 5
                     elif event.key == pygame.K_RETURN:
-                        if menu_selection == 0:
+                        if menu_selection == 0:  # PLAY
                             player, engine = _reset_game(config)
                             engine.c_s = C_S
-                            countdown, frame_timer, game_state = 3, 0, GameState.COUNTDOWN
-                            # On force le recalcul du labyrinthe pour la nouvelle partie
+                            countdown, frame_timer = 1, 0
+                            game_state = GameState.COUNTDOWN
                             renderer.maze_p.maze_surface = None
-                            player_name = ""  # FIX 2 : On vide le nom du précédent joueur
-                        elif menu_selection == 1:
+                            player_name = ""
+                        elif menu_selection == 1:  # HIGHSCORES
                             game_state = GameState.HIGHSCORES
-                        elif menu_selection == 2:
+                        elif menu_selection == 2:  # FULLSCREEN
+                            pygame.display.toggle_fullscreen()
+                            renderer.maze_p.maze_surface = None
+                        elif menu_selection == 3:  # INSTRUCTIONS
                             game_state = GameState.INSTRUCTIONS
-                        elif menu_selection == 3:
+                        elif menu_selection == 4:  # EXIT
                             pygame.quit()
                             sys.exit()
 
@@ -163,11 +166,11 @@ def main() -> None:
                             player_name += event.unicode
 
                 elif game_state == GameState.HIGHSCORES:
-                    # FIX 3 : On gère Espace, Échap ET Entrée pour être sûr que tu puisses sortir
-                    if event.key in (pygame.K_SPACE, pygame.K_ESCAPE, pygame.K_RETURN):
+                    if event.key in (pygame.K_ESCAPE, pygame.K_SPACE, pygame.K_RETURN):
                         game_state = GameState.MENU
-                        player_name = ""  
+                        player_name = ""
 
+        # RENDU GRAPHIQUE
         if game_state == GameState.MENU:
             renderer.draw_menu(win_w, win_h, menu_selection)
 
@@ -191,7 +194,7 @@ def main() -> None:
             engine.cheat_speed = cheats["speed"]
             engine.cheat_freeze = cheats["freeze"]
             engine.run()
-
+            
             if not engine.running:
                 game_state = GameState.GAME_OVER
             elif getattr(engine, 'life_just_lost', False):
@@ -201,6 +204,7 @@ def main() -> None:
                 engine.level_just_changed = False
                 countdown, frame_timer, game_state = 1, 0, GameState.COUNTDOWN
                 renderer.maze_p.maze_surface = None
+                # On vide la mémoire de Pac-Man !
                 player.current_direction = None
                 player.next_direction = None
 

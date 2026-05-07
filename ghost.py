@@ -66,7 +66,7 @@ class Ghost():
             move = self._chase_pac_man(possible)
 
         elif self._state == State.FRIGHTENED:
-            move = random.choice(possible)
+            move = self._run_from_pac_man(possible)
 
         elif self._state == State.DEAD:
             move = self._respawn(possible)
@@ -120,8 +120,7 @@ class Ghost():
             possible.append(Direction.WEST)
 
         forbidden = OPPOSITES.get(self.direction)
-        if forbidden in possible and len(possible) > 1 and (self._state !=
-                                                            State.FRIGHTENED):
+        if forbidden in possible and len(possible) > 1:
             possible.remove(forbidden)
 
         return possible
@@ -132,6 +131,30 @@ class Ghost():
         target: tuple = self.engine.player.get_position()
         move = self._get_direction(target, possible)
         return move
+
+    def _run_from_pac_man(self, possible: list) -> Direction:
+        target = self.engine.player.get_position()
+        best_distance = -1.0  # On cherche le maximum donc on part de bas
+        best_direction = possible[0]
+
+        offsets = {
+            Direction.NORTH: (0, -1),
+            Direction.SOUTH: (0, 1),
+            Direction.EAST: (1, 0),
+            Direction.WEST: (-1, 0)
+        }
+
+        for direction in possible:
+            dx, dy = offsets[direction]
+            tx, ty = self.pos_x + dx, self.pos_y + dy
+            #  Distance euclidienne 
+            dist = (target[0] - tx)**2 + (target[1] - ty)**2  
+
+            if dist > best_distance:
+                best_distance = dist
+                best_direction = direction
+
+        return best_direction
 
     def _respawn(self, possible):
         target: tuple = self._spawn

@@ -221,7 +221,6 @@ class ActorRenderer(BaseRenderer):
 
         return t == 1
 
-
 class UIRenderer(BaseRenderer):
 
     def __init__(self, screen: pygame.Surface, assets: AssetManager) -> None:
@@ -324,7 +323,7 @@ class UIRenderer(BaseRenderer):
             self.screen.fill((0, 0, 0))
 
         ov = pygame.Surface((window_w, window_h), pygame.SRCALPHA)
-        ov.fill((0, 0, 0, 120))
+        ov.fill((0, 0, 0, 140))
         self.screen.blit(ov, (0, 0))
 
         if "main" in self.assets.banners:
@@ -338,7 +337,7 @@ class UIRenderer(BaseRenderer):
             t = self.f_xl.render("PAC-MAN", True, (255, 220, 0))
             self.screen.blit(t, ((window_w - t.get_width()) // 2, window_h // 4))
 
-        opts = ["PLAY", "HIGHSCORES", "INSTRUCTIONS", "EXIT"]
+        opts = ["PLAY", "HIGHSCORES", "FULLSCREEN", "INSTRUCTIONS", "EXIT"]
         for i, opt in enumerate(opts):
             is_sel = (i == sel)
             col = (255, 220, 0) if is_sel else (200, 200, 200)
@@ -349,19 +348,19 @@ class UIRenderer(BaseRenderer):
             t_rect = t_surf.get_rect(center=(cx, cy))
 
             if is_sel:
-                g_rect = t_rect.inflate(30, 20)
+                g_rect = t_rect.inflate(40, 20)
                 pygame.draw.rect(
-                    self.screen, (50, 50, 50), g_rect, border_radius=10
+                    self.screen, (40, 40, 40), g_rect, border_radius=12
                 )
                 pygame.draw.rect(
-                    self.screen, (255, 220, 0), g_rect, 2, border_radius=10
+                    self.screen, (255, 220, 0), g_rect, 2, border_radius=12
                 )
 
                 t_ticks = pygame.time.get_ticks()
-                offset = int(math.sin(t_ticks * 0.01) * 10)
+                offset = int(math.sin(t_ticks * 0.01) * 8)
                 c_surf = self.f_menu.render(">", True, (255, 220, 0))
                 self.screen.blit(
-                    c_surf, (t_rect.left - 40 + offset, t_rect.top)
+                    c_surf, (t_rect.left - 50 + offset, t_rect.top)
                 )
 
             self.screen.blit(t_surf, t_rect)
@@ -412,6 +411,13 @@ class UIRenderer(BaseRenderer):
             self.screen.blit(n_s, (c2, y))
             self.screen.blit(sc_s, (c3 - sc_s.get_width(), y))
             y += 52
+  
+        hint_txt = "PRESS ESC TO RETURN"
+        hint_surf = self.f_sm.render(hint_txt, True, (150, 150, 150))
+        self.screen.blit(
+            hint_surf, 
+            ((win_w - hint_surf.get_width()) // 2, win_h - 60)
+        )
 
     def draw_pause(
         self, win_w: int, win_h: int, sel: int, confirm: bool

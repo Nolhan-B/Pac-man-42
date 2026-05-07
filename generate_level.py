@@ -27,28 +27,29 @@ class Level:
         return (MazeGenerator(size=size, seed=config.seed))
 
     def _init_put_gum(self) -> None:
-        corners = [
-            (1, 1),                                      # Haut-Gauche
-            (self.width - 2, 1),                         # Haut-Droite
-            (1, self.height - 2),                        # Bas-Gauche
-            (self.width - 2, self.height - 2)            # Bas-Droite
-        ]
+        # 4 coin
+        c1 = (1, 1)
+        c2 = (self.width - 2, 1)
+        c3 = (1, self.height - 2)
+        c4 = (self.width - 2, self.height - 2)
 
+        corners = [c1, c2, c3, c4]
         for y in range(self.height):
             for x in range(self.width):
                 val = self.layout[y][x]
-                # Si (val & 15) == 15, c'est un bloc plein
-                # cases où on peut marcher :
-                if (val & 15) != 15:
 
-                    if (x, y) in corners:
-                        # coin:Super Pac-gum
-                        self.layout[y][x] |= self.SUPER_PACGUM
-                        self.total_gum += 1
-                    else:
-                        # couloir normal: Pac-gum
-                        self.layout[y][x] |= self.PACGUM
-                        self.total_gum += 1
+                # On ne met pas de gomme dans les blocs pleins (15)
+                if (val & 15) == 15:
+                    continue
+
+                if (x, y) in corners:
+                    # On force le bit 32
+                    self.layout[y][x] |= 32
+                    self.total_gum += 1
+                else:
+                    # On force le bit 16
+                    self.layout[y][x] |= 16
+                    self.total_gum += 1
 
     def check_and_eat_gum(self, player_posy, player_posx) -> str:
         val = self.layout[player_posy][player_posx]
