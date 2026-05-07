@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
-
+from constants import Direction, State
 import pygame
-
-from assets import AssetManager
+import math
+from asset_manager import AssetManager
+from typing import Dict, Any, List
 
 
 class BaseRenderer(ABC):
@@ -93,6 +94,21 @@ class ActorRenderer(BaseRenderer):
     def __init__(self, screen: pygame.Surface, assets: AssetManager) -> None:
         super().__init__(screen, assets)
         self.tick: int = 0
+
+    def draw(self, engine: Any, mx: int, my: int, c_s: int) -> None:
+        """Main draw call for all actors."""
+        for ghost in engine.ghosts:
+            self.draw_ghost(ghost, mx, my, c_s)
+
+        if getattr(engine, "dying", False):
+            self.draw_death(
+                engine.player, mx, my, c_s, engine.death_animation_timer
+            )
+        else:
+            self.draw_pacman(
+                engine.player, engine.current_level.layout,
+                mx, my, c_s, engine.invincibility_timer
+            )
 
     def draw_pacman(
         self, p: Any, layout: List[List[int]], mx: int, my: int,
@@ -204,3 +220,334 @@ class ActorRenderer(BaseRenderer):
             pygame.draw.arc(self.screen, (255, 255, 0), rect, sa, ea, rad)
 
         return t == 1
+
+
+class UIRenderer(BaseRenderer):
+
+    def __init__(self, screen: pygame.Surface, assets: AssetManager) -> None:
+        super().__init__(screen, assets)
+        path = "assets/PressStart2P.ttf"
+        try:
+            self.f_sm = pygame.font.Font(path, 14)
+            self.f_hint = pygame.font.Font(path, 16)
+            self.f_md = pygame.font.Font(path, 18)
+            self.f_lg = pygame.font.Font(path, 22)
+            self.f_menu = pygame.font.Font(path, 28)
+            self.f_xl = pygame.font.Font(path, 36)
+        except OSError:
+            self.f_sm = pygame.font.SysFont("Arial", 14)
+            self.f_hint = pygame.font.SysFont("Arial", 16)
+            self.f_md = pygame.font.SysFont("Arial", 18)
+            self.f_lg = pygame.font.SysFont("Arial", 22)
+            self.f_menu = pygame.font.SysFont("Arial", 28)
+            self.f_xl = pygame.font.SysFont("Arial", 36)
+
+    def draw(
+        self, engine: Any, win_w: int, footer_h: int,
+        game_state: Any, countdown: int, timer: int
+    ) -> None:
+        self.draw_hud(engine, win_w, footer_h)
+        if game_state.name == "COUNTDOWN":
+            banner = "ready" if countdown > 0 else "go"
+            self.draw_banner(banner, win_w, timer)
+        if game_state.name == "GAME_OVER":
+            self.draw_banner("game_over", win_w, 0)
+
+    def draw_hud(self, engine: Any, window_w: int, footer_h: int) -> None:
+        f_y = self.screen.get_height() - footer_h + 10
+        sec = max(0, int(engine.time_left))
+        t_col = (255, 255, 255)
+
+        if sec < 10 and (int(engine.time_left * 5) % 2 == 0):
+            t_col = (255, 0, 0)
+
+        t_txt = self.f_sm.render(f"Time: {sec}s", True, t_col)
+        s_txt = self.f_sm.render(
+            f"Score: {engine.player.score}", True, (255, 255, 255)
+        )
+        l_txt = self.f_sm.render(
+            f"Vies: {engine.player.lives}", True, (255, 255, 255)
+        )
+        lv_txt = self.f_sm.render(
+            f"Level: {engine.level_id + 1}", True, (255, 255, 255)
+        )
+
+        sp = 50
+        tw = (
+            s_txt.get_width() + t_txt.get_width()
+            + l_txt.get_width() + lv_txt.get_width() + (sp * 3)
+        )
+        curr_x = (window_w - tw) // 2
+
+        hint = self.f_sm.render(
+            "Press [TAB] to display keybinds", True, (50, 50, 50)
+        )
+        self.screen.blit(hint, (10, 10))
+
+        for surf in [s_txt, t_txt, l_txt, lv_txt]:
+            self.screen.blit(surf, (curr_x, f_y))
+            curr_x += surf.get_width() + sp
+
+    def draw_banner(self, name: str, window_w: int, timer: int) -> None:
+        img = self.assets.banners.get(name)
+        progress = (60 - timer) / 60.0
+
+        if name == "go":
+            scale_factor = 1.2 - (0.2 * progress)
+            offset_y = -50 + (50 * progress)
+        else:
+            scale_factor = 1.0
+            offset_y = 0.0
+
+        if img:
+            base_w = int(window_w * (0.7 if name == "game_over" else 0.5))
+            tw = int(base_w * scale_factor)
+            ratio = tw / img.get_width()
+            th = int(img.get_height() * ratio)
+            scaled = pygame.transform.smoothscale(img, (tw, th))
+            x = (window_w - scaled.get_width()) // 2
+            y = (self.screen.get_height() - scaled.get_height()) // 2
+            self.screen.blit(scaled, (x, int(y + offset_y)))
+        else:
+            labels = {"ready": "READY?", "go": "GO!", "game_over": "GAME OVER"}
+            txt = labels.get(name, name.upper())
+            col = (255, 50, 50) if name == "game_over" else (255, 220, 0)
+            surf = self.f_xl.render(txt, True, col)
+            x = (window_w - surf.get_width()) // 2
+            y = (self.screen.get_height() - surf.get_height()) // 2
+            self.screen.blit(surf, (x, int(y + offset_y)))
+
+    def draw_menu(self, window_w: int, window_h: int, sel: int) -> None:
+        if self.assets.menu_bg:
+            self.screen.blit(self.assets.menu_bg, (0, 0))
+        else:
+            self.screen.fill((0, 0, 0))
+
+        ov = pygame.Surface((window_w, window_h), pygame.SRCALPHA)
+        ov.fill((0, 0, 0, 120))
+        self.screen.blit(ov, (0, 0))
+
+        if "main" in self.assets.banners:
+            img = self.assets.banners["main"]
+            tw = int(window_w * 0.7)
+            ratio = tw / img.get_width()
+            th = int(img.get_height() * ratio)
+            scaled = pygame.transform.smoothscale(img, (tw, th))
+            self.screen.blit(scaled, ((window_w - tw) // 2, window_h // 30))
+        else:
+            t = self.f_xl.render("PAC-MAN", True, (255, 220, 0))
+            self.screen.blit(t, ((window_w - t.get_width()) // 2, window_h // 4))
+
+        opts = ["PLAY", "HIGHSCORES", "INSTRUCTIONS", "EXIT"]
+        for i, opt in enumerate(opts):
+            is_sel = (i == sel)
+            col = (255, 220, 0) if is_sel else (200, 200, 200)
+
+            t_surf = self.f_menu.render(opt, True, col)
+            cx = window_w // 2
+            cy = window_h // 2 + i * 75
+            t_rect = t_surf.get_rect(center=(cx, cy))
+
+            if is_sel:
+                g_rect = t_rect.inflate(30, 20)
+                pygame.draw.rect(
+                    self.screen, (50, 50, 50), g_rect, border_radius=10
+                )
+                pygame.draw.rect(
+                    self.screen, (255, 220, 0), g_rect, 2, border_radius=10
+                )
+
+                t_ticks = pygame.time.get_ticks()
+                offset = int(math.sin(t_ticks * 0.01) * 10)
+                c_surf = self.f_menu.render(">", True, (255, 220, 0))
+                self.screen.blit(
+                    c_surf, (t_rect.left - 40 + offset, t_rect.top)
+                )
+
+            self.screen.blit(t_surf, t_rect)
+
+        hint = self.f_hint.render("USE ARROWS & ENTER", True, (100, 100, 100))
+        self.screen.blit(
+            hint, ((window_w - hint.get_width()) // 2, window_h - 50)
+        )
+
+    def draw_highscores(
+        self, win_w: int, win_h: int, scores: List[Any]
+    ) -> None:
+        self.screen.fill((0, 0, 0))
+        titre = self.f_xl.render("HIGHSCORES", True, (255, 220, 0))
+        self.screen.blit(titre, ((win_w - titre.get_width()) // 2, 30))
+
+        c1 = win_w // 2 - 280
+        c2 = win_w // 2 - 180
+        c3 = win_w // 2 + 280
+
+        hr = self.f_md.render("#", True, (150, 150, 150))
+        hn = self.f_md.render("NAME", True, (150, 150, 150))
+        hs = self.f_md.render("SCORE", True, (150, 150, 150))
+        self.screen.blit(hr, (c1, 110))
+        self.screen.blit(hn, (c2, 110))
+        self.screen.blit(hs, (c3 - hs.get_width(), 110))
+
+        pygame.draw.line(
+            self.screen, (80, 80, 80), (c1, 138), (c3 + 10, 138), 1
+        )
+
+        y = 150
+        for i, s in enumerate(scores[:10]):
+            if i == 0:
+                col = (255, 215, 0)
+            elif i == 1:
+                col = (192, 192, 192)
+            elif i == 2:
+                col = (205, 127, 50)
+            else:
+                col = (255, 255, 255)
+
+            r_s = self.f_lg.render(f"{i+1}.", True, col)
+            n_s = self.f_lg.render(s.name[:10], True, col)
+            sc_s = self.f_lg.render(str(s.score)[:8], True, col)
+
+            self.screen.blit(r_s, (c1, y))
+            self.screen.blit(n_s, (c2, y))
+            self.screen.blit(sc_s, (c3 - sc_s.get_width(), y))
+            y += 52
+
+    def draw_pause(
+        self, win_w: int, win_h: int, sel: int, confirm: bool
+    ) -> None:
+        ov = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+        ov.fill((0, 0, 0, 180))
+        self.screen.blit(ov, (0, 0))
+
+        msg = "Exit game?" if confirm else "PAUSED"
+        opts = (
+            ["Yes, exit", "No, go back"] if confirm
+            else ["Resume", "Exit to menu"]
+        )
+
+        t_col = (255, 80, 80) if confirm else (255, 220, 0)
+        t_surf = self.f_xl.render(msg, True, t_col)
+        self.screen.blit(
+            t_surf, ((win_w - t_surf.get_width()) // 2, win_h // 3)
+        )
+
+        for i, opt in enumerate(opts):
+            col = (255, 220, 0) if i == sel else (255, 255, 255)
+            pref = "> " if i == sel else "  "
+            txt = self.f_lg.render(f"{pref}{opt}", True, col)
+            x = (win_w - txt.get_width()) // 2
+            y = win_h // 2 + i * 60
+            self.screen.blit(txt, (x, y))
+
+    def draw_instructions(self, window_w: int, window_h: int) -> None:
+        if self.assets.menu_bg:
+            self.screen.blit(self.assets.menu_bg, (0, 0))
+        else:
+            self.screen.fill((0, 0, 0))
+
+        ov = pygame.Surface((window_w, window_h), pygame.SRCALPHA)
+        ov.fill((0, 0, 0, 180))
+        self.screen.blit(ov, (0, 0))
+
+        y = 20
+        banner = self.assets.banners.get("instructions")
+        if banner:
+            target_w = int(window_w * 0.7)
+            ratio = target_w / banner.get_width()
+            th = int(banner.get_height() * ratio)
+            scaled = pygame.transform.smoothscale(banner, (target_w, th))
+            self.screen.blit(scaled, ((window_w - target_w) // 2, y))
+            y += th + 30
+        else:
+            t = self.f_xl.render("HOW TO PLAY", True, (255, 220, 0))
+            self.screen.blit(t, ((window_w - t.get_width()) // 2, y))
+            y += 100
+
+        sections = [
+            ("--- GOAL ---", [
+                "Eat all pac-gums to win!",
+                "Avoid ghosts unless they are blue."
+            ]),
+            ("--- CONTROLS ---", [
+                "ARROWS : Move Pac-Man",
+                "P / ESC : Pause game",
+                "TAB : Open Cheat Menu"
+            ])
+        ]
+        for t_txt, lines in sections:
+            t_surf = self.f_md.render(t_txt, True, (255, 220, 0))
+            self.screen.blit(
+                t_surf, ((window_w - t_surf.get_width()) // 2, y)
+            )
+            y += 45
+            for line in lines:
+                l_surf = self.f_sm.render(line, True, (255, 255, 255))
+                self.screen.blit(
+                    l_surf, ((window_w - l_surf.get_width()) // 2, y)
+                )
+                y += 35
+            y += 20
+
+        hint = self.f_sm.render(
+            "Press ESC to return", True, (200, 200, 200)
+        )
+        self.screen.blit(
+            hint, ((window_w - hint.get_width()) // 2, window_h - 50)
+        )
+
+    def draw_enter_name(
+        self, window_w: int, window_h: int, name: str, score: int
+    ) -> None:
+        self.screen.fill((0, 0, 0))
+
+        t1 = self.f_xl.render("GAME OVER", True, (255, 50, 50))
+        self.screen.blit(
+            t1, ((window_w - t1.get_width()) // 2, window_h // 5)
+        )
+
+        t2 = self.f_lg.render(f"Final score : {score}", True, (255, 220, 0))
+        y2 = window_h // 5 + 100
+        self.screen.blit(t2, ((window_w - t2.get_width()) // 2, y2))
+
+        t3 = self.f_lg.render("Enter your name :", True, (255, 255, 255))
+        y3 = window_h // 2 - 40
+        self.screen.blit(t3, ((window_w - t3.get_width()) // 2, y3))
+
+        t4 = self.f_lg.render(name + "_", True, (255, 220, 0))
+        y4 = window_h // 2 + 20
+        self.screen.blit(t4, ((window_w - t4.get_width()) // 2, y4))
+
+        msg = "Press [RETURN] to validate | max 10 characters"
+        t5 = self.f_sm.render(msg, True, (100, 100, 100))
+        y5 = window_h - 60
+        self.screen.blit(t5, ((window_w - t5.get_width()) // 2, y5))
+
+    def draw_cheats_overlay(self, cheats: Dict[str, bool]) -> None:
+        ov = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+        ov.fill((0, 0, 0, 180))
+        self.screen.blit(ov, (0, 0))
+
+        def status(val: bool) -> str:
+            return "ON" if val else "OFF"
+
+        lines = [
+            "CHEATS", "",
+            f"I -> Invincible : {status(cheats['invincible'])}",
+            f"F -> Freeze ghosts : {status(cheats['freeze'])}",
+            f"S -> Speed : {status(cheats['speed'])}",
+            "N -> Next level", "V -> +1 Life", "", "TAB -> Fermer"
+        ]
+        for i, line in enumerate(lines):
+            font = self.f_xl if i == 0 else self.f_sm
+            if "ON" in line:
+                col = (0, 255, 0)
+            elif "OFF" in line:
+                col = (255, 80, 80)
+            else:
+                col = (255, 255, 255)
+
+            text = font.render(line, True, col)
+            x = (self.screen.get_width() - text.get_width()) // 2
+            y = 150 + i * 40
+            self.screen.blit(text, (x, y))
