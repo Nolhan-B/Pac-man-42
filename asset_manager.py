@@ -21,7 +21,7 @@ class AssetManager:
         self._load_pacman()
         self._load_ghosts()
         self._load_ui(screen_size)
-        self._load_back_maze(screen_size) # On passe la taille ici
+        self._load_back_maze(screen_size)  # On passe la taille ici
 
     def _load_back_maze(self, screen_size: Tuple[int, int]) -> None:
         """Charge et prépare l'image de fond."""

@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
 from constants import Direction, State
 import pygame
 import math
 from asset_manager import AssetManager
-from typing import Dict, Any, List
 
 
 class BaseRenderer(ABC):
@@ -41,7 +40,7 @@ class MazeRenderer(BaseRenderer):
                 shape = cell & 15
                 if shape > 0:
                     self._draw_lines(self.maze_surface, ox, oy, shape, c_s)
-    
+
     def _draw_background_grid(
         self, win_w: int, win_h: int, c_s: int
     ) -> None:
@@ -92,7 +91,7 @@ class MazeRenderer(BaseRenderer):
         """Dessine les gommes avec animations de pulsation et brillance."""
         ticks = pygame.time.get_ticks()
         dot_color = (255, 184, 174)
-        
+
         for y, row in enumerate(layout):
             for x, cell in enumerate(row):
                 if not (cell & 48):  # 16 (Normal) | 32 (Super) = 48
@@ -107,10 +106,11 @@ class MazeRenderer(BaseRenderer):
                     # dessine un cercle qui pulse autour du pacgum
                     pulse = 0.8 + 0.2 * math.sin(ticks * 0.008)
                     radius = int(8 * pulse)
-                    
+
                     # un peu de transparence
                     pygame.draw.circle(
-                        self.screen, (255, 255, 255, 80), (cx, cy), radius + 3
+                        self.screen, (255, 255, 255, 80),
+                        (cx, cy), radius + 3
                     )
                     # la gomme elle meme
                     pygame.draw.circle(self.screen, dot_color, (cx, cy), radius)
@@ -259,6 +259,7 @@ class ActorRenderer(BaseRenderer):
 
         return t == 1
 
+
 class UIRenderer(BaseRenderer):
 
     def __init__(self, screen: pygame.Surface, assets: AssetManager) -> None:
@@ -366,16 +367,16 @@ class UIRenderer(BaseRenderer):
 
         if "main" in self.assets.banners:
             img = self.assets.banners["main"]
-            
+
             # gestion des taille
             max_w = window_w * 1.25
             max_h = window_h * 0.60
-            
+
             # evite de deformer
             ratio = min(max_w / img.get_width(), max_h / img.get_height())
             tw = int(img.get_width() * ratio)
             th = int(img.get_height() * ratio)
-            
+
             scaled = pygame.transform.smoothscale(img, (tw, th))
 
             self.screen.blit(scaled, ((window_w - tw) // 2, window_h // 20))
@@ -430,7 +431,6 @@ class UIRenderer(BaseRenderer):
         ov.fill((0, 0, 0, 140))
         self.screen.blit(ov, (0, 0))
 
-
         titre = self.f_xl.render("HIGHSCORES", True, (255, 220, 0))
         self.screen.blit(titre, ((win_w - titre.get_width()) // 2, 30))
 
@@ -468,11 +468,11 @@ class UIRenderer(BaseRenderer):
             self.screen.blit(n_s, (c2, y))
             self.screen.blit(sc_s, (c3 - sc_s.get_width(), y))
             y += 52
-  
+
         hint_txt = "PRESS ESC TO RETURN"
         hint_surf = self.f_sm.render(hint_txt, True, (150, 150, 150))
         self.screen.blit(
-            hint_surf, 
+            hint_surf,
             ((win_w - hint_surf.get_width()) // 2, win_h - 60)
         )
 
@@ -508,7 +508,7 @@ class UIRenderer(BaseRenderer):
             self.screen.blit(self.assets.menu_bg, (0, 0))
         else:
             self.screen.fill((0, 0, 0))
-  
+
         ov = pygame.Surface((window_w, window_h), pygame.SRCALPHA)
         ov.fill((0, 0, 0, 180))
         self.screen.blit(ov, (0, 0))
@@ -516,7 +516,7 @@ class UIRenderer(BaseRenderer):
         titre = self.f_xl.render("HOW TO PLAY", True, (255, 220, 0))
         self.screen.blit(titre, ((window_w - titre.get_width()) // 2, 30))
 
-        y = window_h // 3 
+        y = window_h // 3
 
         controls = [
             ("MOVE", ["UP", "DOWN", "LEFT", "RIGHT"]),
@@ -528,32 +528,43 @@ class UIRenderer(BaseRenderer):
             # Affichage du label
             lbl_surf = self.f_md.render(label, True, (255, 220, 0))
             self.screen.blit(lbl_surf, (window_w // 4, y))
-            curr_x = window_w // 2 - 20 
+            curr_x = window_w // 2 - 20
             for key in keys:
                 # Rendu du texte de la touche
                 k_surf = self.f_sm.render(key, True, (255, 255, 255))
                 k_rect = k_surf.get_rect(topleft=(curr_x, y))
 
                 # Contour du bouton
-                btn_rect = k_rect.inflate(24, 18) 
-                pygame.draw.rect(self.screen, (60, 60, 60), btn_rect, border_radius=5)
-                pygame.draw.rect(self.screen, (255, 255, 255), btn_rect, 1, border_radius=5)
+                btn_rect = k_rect.inflate(24, 18)
+                pygame.draw.rect(
+                    self.screen, (60, 60, 60), btn_rect, border_radius=5
+                )
+                pygame.draw.rect(
+                    self.screen, (255, 255, 255), btn_rect, 1, border_radius=5
+                )
 
                 # Texte au centre du bouton
-                self.screen.blit(k_surf, (btn_rect.centerx - k_surf.get_width() // 2,
-                                          btn_rect.centery - k_surf.get_height() // 2))
-                curr_x += btn_rect.width + 15 
-            y += 80 
+                self.screen.blit(
+                    k_surf,
+                    (btn_rect.centerx - k_surf.get_width() // 2,
+                     btn_rect.centery - k_surf.get_height() // 2)
+                )
+                curr_x += btn_rect.width + 15
+            y += 80
 
         # But du jeu
         y += 20
         goal_txt = "GOAL: Eat all pac-gums and avoid ghosts!"
-        goal_surf = self.f_md.render(goal_txt, True, (200, 200, 255)) 
-        self.screen.blit(goal_surf, ((window_w - goal_surf.get_width()) // 2, y))
+        goal_surf = self.f_md.render(goal_txt, True, (200, 200, 255))
+        self.screen.blit(
+            goal_surf, ((window_w - goal_surf.get_width()) // 2, y)
+        )
 
         # esc en bas
         hint = self.f_sm.render("PRESS ESC TO RETURN", True, (150, 150, 150))
-        self.screen.blit(hint, ((window_w - hint.get_width()) // 2, window_h - 60))
+        self.screen.blit(
+            hint, ((window_w - hint.get_width()) // 2, window_h - 60)
+        )
 
     def draw_enter_name(
         self, window_w: int, window_h: int, name: str, score: int

@@ -35,10 +35,10 @@ clean:
 
 lint:
 	@echo "$(GREEN)Running linter...(flake8 + mypy)...$(RESET)"
-	$(VENV)/bin/flake8 .
-	$(VENV)/bin/mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs .
+	$(VENV)/bin/flake8 . --exclude=$(VENV)
+	$(VENV)/bin/mypy --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs . --exclude $(VENV)
 
 lint-strict:
 	@echo "$(GREEN)Running linter -strict...$(RESET)"
-	$(VENV)/bin/flake8 .
-	$(VENV)/bin/mypy --strict .
+	$(VENV)/bin/flake8 . --exclude=$(VENV)
+	$(VENV)/bin/mypy --strict . --exclude $(VENV)
