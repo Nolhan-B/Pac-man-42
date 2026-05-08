@@ -50,7 +50,8 @@ def main() -> None:
     countdown, frame_timer = 1, 0
     player_name = ""
     show_cheats = False
-    cheats: Dict[str, bool] = {"invincible": False, "freeze": False, "speed": False}
+    cheats: Dict[str, bool] = {"invincible": False, "freeze": False,
+                               "speed": False}
 
     menu_selection, pause_selection = 0, 0
     confirm_selection = 1

@@ -4,6 +4,7 @@ from asset_manager import AssetManager
 from constants import GameState
 from base_renderer import ActorRenderer, MazeRenderer, UIRenderer
 
+
 class Renderer:
     def __init__(self, screen: pygame.Surface) -> None:
         self.screen = screen
@@ -27,19 +28,20 @@ class Renderer:
             avail_h // engine.current_level.height
         )
         mx = (win_w - (engine.current_level.width * self.c_s)) // 2
-        my = self.header + (avail_h - (engine.current_level.height * self.c_s)) // 2
+        my = self.header + (avail_h -
+                            (engine.current_level.height * self.c_s)) // 2
         return mx, my, self.c_s
 
     def draw_game(self, engine: Any, game_state: GameState, countdown: int,
-                  timer: int, show_cheats: bool, cheats: Optional[Dict[str, bool]] = None) -> None:
+                  timer: int, show_cheats: bool,
+                  cheats: Optional[Dict[str, bool]] = None) -> None:
         if self.assets.game_bg:
             self.screen.blit(self.assets.game_bg, (0, 0))
         else:
             self.screen.fill((0, 0, 0))
         mx, my, c_s = self._get_layout_params(engine)
-        
-        # Super important : on resynchronise la taille du moteur
-        engine.c_s = c_s 
+
+        engine.c_s = c_s
 
         self.maze_p.draw(engine.current_level.layout, mx, my, c_s)
         self.actor_p.draw(engine, mx, my, c_s)
@@ -60,7 +62,8 @@ class Renderer:
         self.ui_p.draw_menu(win_w, win_h, selection)
         pygame.display.flip()
 
-    def draw_pause(self, win_w: int, win_h: int, selection: int, confirm: bool) -> None:
+    def draw_pause(self, win_w: int, win_h: int, selection: int,
+                   confirm: bool) -> None:
         self.ui_p.draw_pause(win_w, win_h, selection, confirm)
         pygame.display.flip()
 
@@ -72,6 +75,7 @@ class Renderer:
         self.ui_p.draw_instructions(win_w, win_h)
         pygame.display.flip()
 
-    def draw_enter_name(self, win_w: int, win_h: int, name: str, score: int) -> None:
+    def draw_enter_name(self, win_w: int, win_h: int, name: str,
+                        score: int) -> None:
         self.ui_p.draw_enter_name(win_w, win_h, name, score)
         pygame.display.flip()

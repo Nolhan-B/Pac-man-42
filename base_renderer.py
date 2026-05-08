@@ -113,7 +113,8 @@ class MazeRenderer(BaseRenderer):
                         (cx, cy), radius + 3
                     )
                     # la gomme elle meme
-                    pygame.draw.circle(self.screen, dot_color, (cx, cy), radius)
+                    pygame.draw.circle(self.screen, dot_color, (cx, cy),
+                                       radius)
                     # Reflet brillant au centre
                     pygame.draw.circle(
                         self.screen, (255, 255, 255), (cx - 2, cy - 2), 2

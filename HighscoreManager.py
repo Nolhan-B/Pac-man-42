@@ -20,7 +20,8 @@ class PlayerScore:
             self.name = self.name[:10]
 
         if not isinstance(self.score, int) or self.score < 0:
-            raise ValueError(f"Score must be a positive integer! (got :{self.score})")
+            raise ValueError(f"Score must be a positive integer!"
+                             f" (got :{self.score})")
 
 
 class HighscoreManager:
@@ -38,10 +39,12 @@ class HighscoreManager:
                     for e in data:
                         self.scores.append(PlayerScore(e["name"], e["score"]))
                 except (KeyError, ValueError, TypeError):
-                    logger.warning(f"Score with value {e["name"]} / {e["score"]} is"
+                    logger.warning(f"Score with value {e["name"]} / "
+                                   f"{e["score"]} is"
                                    " not valid and will not be used "
                                    "for highscores")
-                self.scores = sorted(self.scores, key=lambda e: e.score, reverse=True)[:10]
+                self.scores = sorted(self.scores, key=lambda e: e.score,
+                                     reverse=True)[:10]
         except FileNotFoundError:
             logger.warning(f"Filepath {self.filepath} not found")
             self._save()
@@ -57,7 +60,8 @@ class HighscoreManager:
 
     def add_score(self, score: PlayerScore) -> None:
         self.scores.append(score)
-        self.scores = sorted(self.scores, key=lambda e: e.score, reverse=True)[:10]
+        self.scores = sorted(self.scores, key=lambda e: e.score,
+                             reverse=True)[:10]
         self._save()
 
     def _save(self) -> None:

@@ -147,8 +147,8 @@ class Ghost():
         for direction in possible:
             dx, dy = offsets[direction]
             tx, ty = self.pos_x + dx, self.pos_y + dy
-            #  Distance euclidienne 
-            dist = (target[0] - tx)**2 + (target[1] - ty)**2  
+            #  Distance euclidienne
+            dist = (target[0] - tx)**2 + (target[1] - ty)**2
 
             if dist > best_distance:
                 best_distance = dist
