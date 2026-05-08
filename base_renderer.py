@@ -41,6 +41,17 @@ class MazeRenderer(BaseRenderer):
                 shape = cell & 15
                 if shape > 0:
                     self._draw_lines(self.maze_surface, ox, oy, shape, c_s)
+    
+    def _draw_background_grid(
+        self, win_w: int, win_h: int, c_s: int
+    ) -> None:
+        """Dessine une grille de points subtile en arrière-plan."""
+        grid_color = (30, 30, 40)
+
+        for y in range(0, win_h, c_s):
+            for x in range(0, win_w, c_s):
+
+                pygame.draw.rect(self.screen, grid_color, (x, y, 1, 1))
 
     def _draw_lines(
         self, surface: pygame.Surface, ox: int, oy: int, shape: int, c_s: int
@@ -78,15 +89,42 @@ class MazeRenderer(BaseRenderer):
     def _draw_items(
         self, layout: List[List[int]], mx: int, my: int, c_s: int
     ) -> None:
-        color = (255, 184, 174)
+        """Dessine les gommes avec animations de pulsation et brillance."""
+        ticks = pygame.time.get_ticks()
+        dot_color = (255, 184, 174)
+        
         for y, row in enumerate(layout):
             for x, cell in enumerate(row):
-                ox = x * c_s + mx + c_s // 2
-                oy = y * c_s + my + c_s // 2
-                if cell & 16:
-                    pygame.draw.circle(self.screen, color, (ox, oy), 3)
+                if not (cell & 48):  # 16 (Normal) | 32 (Super) = 48
+                    continue
+
+                # Calcul du centre de la case
+                cx = x * c_s + mx + c_s // 2
+                cy = y * c_s + my + c_s // 2
+
+                # SUPER PAC-GUM (Bit 32)
                 if cell & 32:
-                    pygame.draw.circle(self.screen, color, (ox, oy), 8)
+                    # dessine un cercle qui pulse autour du pacgum
+                    pulse = 0.8 + 0.2 * math.sin(ticks * 0.008)
+                    radius = int(8 * pulse)
+                    
+                    # un peu de transparence
+                    pygame.draw.circle(
+                        self.screen, (255, 255, 255, 80), (cx, cy), radius + 3
+                    )
+                    # la gomme elle meme
+                    pygame.draw.circle(self.screen, dot_color, (cx, cy), radius)
+                    # Reflet brillant au centre
+                    pygame.draw.circle(
+                        self.screen, (255, 255, 255), (cx - 2, cy - 2), 2
+                    )
+
+                # PAC-GUM NORMALE (Bit 16)
+                elif cell & 16:
+                    # juste un point (peut etre un asset plus tard)
+                    size = 4
+                    rect = (cx - size // 2, cy - size // 2, size, size)
+                    pygame.draw.rect(self.screen, dot_color, rect)
 
 
 class ActorRenderer(BaseRenderer):
