@@ -508,26 +508,15 @@ class UIRenderer(BaseRenderer):
             self.screen.blit(self.assets.menu_bg, (0, 0))
         else:
             self.screen.fill((0, 0, 0))
-
+  
         ov = pygame.Surface((window_w, window_h), pygame.SRCALPHA)
         ov.fill((0, 0, 0, 180))
         self.screen.blit(ov, (0, 0))
 
-        y = window_h // 20
-        banner = self.assets.banners.get("instructions")
-        
-        if banner:
-            max_banner_h = window_h * 0.25
-            ratio = min(window_w * 0.7 / banner.get_width(), 
-                        max_banner_h / banner.get_height())
-            tw, th = int(banner.get_width() * ratio), int(banner.get_height() * ratio)
-            scaled = pygame.transform.smoothscale(banner, (tw, th))
-            self.screen.blit(scaled, ((window_w - tw) // 2, y))
-            y += th + 40
-        else:
-            t = self.f_xl.render("HOW TO PLAY", True, (255, 220, 0))
-            self.screen.blit(t, ((window_w - t.get_width()) // 2, y))
-            y += window_h // 10
+        titre = self.f_xl.render("HOW TO PLAY", True, (255, 220, 0))
+        self.screen.blit(titre, ((window_w - titre.get_width()) // 2, 30))
+
+        y = window_h // 3 
 
         controls = [
             ("MOVE", ["UP", "DOWN", "LEFT", "RIGHT"]),
@@ -536,34 +525,33 @@ class UIRenderer(BaseRenderer):
         ]
 
         for label, keys in controls:
-            # Affichage du label (ex: MOVE)
+            # Affichage du label
             lbl_surf = self.f_md.render(label, True, (255, 220, 0))
             self.screen.blit(lbl_surf, (window_w // 4, y))
-
-            curr_x = window_w // 2
+            curr_x = window_w // 2 - 20 
             for key in keys:
                 # Rendu du texte de la touche
                 k_surf = self.f_sm.render(key, True, (255, 255, 255))
                 k_rect = k_surf.get_rect(topleft=(curr_x, y))
-                
-                # contour button
-                btn_rect = k_rect.inflate(20, 15)
+
+                # Contour du bouton
+                btn_rect = k_rect.inflate(24, 18) 
                 pygame.draw.rect(self.screen, (60, 60, 60), btn_rect, border_radius=5)
                 pygame.draw.rect(self.screen, (255, 255, 255), btn_rect, 1, border_radius=5)
-                
-                # txt au centre du button
+
+                # Texte au centre du bouton
                 self.screen.blit(k_surf, (btn_rect.centerx - k_surf.get_width() // 2,
-                                         btn_rect.centery - k_surf.get_height() // 2))
-                
-                curr_x += btn_rect.width + 15  # espacement
-                
-            y += window_h // 12  # espace lignes de controles
+                                          btn_rect.centery - k_surf.get_height() // 2))
+                curr_x += btn_rect.width + 15 
+            y += 80 
 
+        # But du jeu
+        y += 20
         goal_txt = "GOAL: Eat all pac-gums and avoid ghosts!"
-        goal_surf = self.f_sm.render(goal_txt, True, (200, 200, 200))
-        self.screen.blit(goal_surf, ((window_w - goal_surf.get_width()) // 2, y + 20))
+        goal_surf = self.f_md.render(goal_txt, True, (200, 200, 255)) 
+        self.screen.blit(goal_surf, ((window_w - goal_surf.get_width()) // 2, y))
 
-        # "esc" en bas
+        # esc en bas
         hint = self.f_sm.render("PRESS ESC TO RETURN", True, (150, 150, 150))
         self.screen.blit(hint, ((window_w - hint.get_width()) // 2, window_h - 60))
 

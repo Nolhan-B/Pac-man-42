@@ -32,7 +32,10 @@ class Renderer:
 
     def draw_game(self, engine: Any, game_state: GameState, countdown: int,
                   timer: int, show_cheats: bool, cheats: Optional[Dict[str, bool]] = None) -> None:
-        self.screen.fill((0, 0, 0))
+        if self.assets.game_bg:
+            self.screen.blit(self.assets.game_bg, (0, 0))
+        else:
+            self.screen.fill((0, 0, 0))
         mx, my, c_s = self._get_layout_params(engine)
         
         # Super important : on resynchronise la taille du moteur

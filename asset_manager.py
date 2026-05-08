@@ -14,11 +14,28 @@ class AssetManager:
         self.ghosts: Dict[str, pygame.Surface] = {}
         self.banners: Dict[str, pygame.Surface] = {}
         self.menu_bg: Optional[pygame.Surface] = None
+        self.game_bg = None
 
     def load_all(self, screen_size: Tuple[int, int]) -> None:
+        """Charge l'ensemble des ressources du jeu."""
         self._load_pacman()
         self._load_ghosts()
         self._load_ui(screen_size)
+        self._load_back_maze(screen_size) # On passe la taille ici
+
+    def _load_back_maze(self, screen_size: Tuple[int, int]) -> None:
+        """Charge et prépare l'image de fond."""
+        try:
+            bg = pygame.image.load("assets/background.png").convert()
+            # taille de la fenêtre
+            self.game_bg = pygame.transform.scale(bg, screen_size)
+            # Opacité (0-255). 80-100 est idéal pour un fond discret
+            self.game_bg.set_alpha(100)
+
+        except (pygame.error, FileNotFoundError):
+            print("Warning: assets/background.png non trouvé.")
+            self.game_bg = pygame.Surface(screen_size)
+            self.game_bg.fill((0, 0, 0))
 
     def _load_pacman(self) -> None:
         try:
