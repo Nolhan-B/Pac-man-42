@@ -33,7 +33,7 @@ def main() -> None:
 
     pygame.init()
     screen = pygame.display.set_mode((WINDOW_W, WINDOW_H), pygame.RESIZABLE)
-    pygame.display.set_caption("Pac-Man Refactored")
+    pygame.display.set_caption("Pac-Man - By nbarbosa & nbilyj")
 
     renderer = Renderer(screen)
     renderer.c_s = C_S

@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 class Ghost():
     def __init__(self, color: str, pos_y: int, pos_x: int,
-                 engine: "Engine", spawn: tuple):
+                 engine: "Engine", spawn: tuple[int, int]):
         self.color = color
         self._spawn = spawn
         self.pos_y = pos_y
@@ -24,7 +24,7 @@ class Ghost():
         self.frightened_timer: int = 0
         self.pos_history: list[tuple[int, int]] = []
 
-    def set_state(self, new_state: State):
+    def set_state(self, new_state: State) -> None:
         if new_state == State.FRIGHTENED and self._state == State.DEAD:
             return
         if new_state == State.FRIGHTENED:
@@ -94,7 +94,7 @@ class Ghost():
             self.set_state(State.CHASE)
 
     @property
-    def current_speed(self):
+    def current_speed(self) -> float:
         if self._state == State.FRIGHTENED:
             return self.speed * 0.5
         if self._state == State.DEAD:
@@ -139,10 +139,10 @@ class Ghost():
         move = self._get_direction(target, possible)
         return move
 
-    def _run_from_pac_man(self, possible: list) -> Direction:
-        target = self.engine.player.get_position()
+    def _run_from_pac_man(self, possible: list[Direction]) -> Direction:
+        target: tuple[int, int] = self.engine.player.get_position()
         best_distance = -1.0  # On cherche le maximum donc on part de bas
-        best_direction = possible[0]
+        best_direction: Direction = possible[0]
 
         offsets = {
             Direction.NORTH: (0, -1),
@@ -164,7 +164,7 @@ class Ghost():
         return best_direction
 
     def _respawn(self, possible: list[Direction]) -> Direction:
-        target: tuple = self._spawn
+        target: tuple[int, int] = self._spawn
         if random.random() < 0.35:
             return random.choice(possible)
         move = self._get_direction(target, possible)

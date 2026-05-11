@@ -1,6 +1,7 @@
 from constants import Direction, OPPOSITES
 from parser import ConfigLoader
 import logging
+from typing import List
 logger = logging.getLogger(__name__)
 
 
@@ -82,7 +83,8 @@ class Player:
         elif self.current_direction == Direction.EAST:
             self.move_right()
 
-    def _can_move(self, direction, layout) -> bool:
+    def _can_move(self, direction: Direction,
+                  layout: List[List[int]]) -> bool:
 
         pos_x, pos_y = self._pos_x, self._pos_y
         val = layout[pos_y][pos_x]

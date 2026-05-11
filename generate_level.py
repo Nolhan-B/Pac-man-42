@@ -51,7 +51,7 @@ class Level:
                     self.layout[y][x] |= 16
                     self.total_gum += 1
 
-    def check_and_eat_gum(self, player_posy, player_posx) -> str:
+    def check_and_eat_gum(self, player_posy: int, player_posx: int) -> str:
         val = self.layout[player_posy][player_posx]
 
         # Test de la Super-gum (bit 32)
