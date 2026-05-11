@@ -72,6 +72,8 @@ class AssetManager:
             "game_over": "assets/game_over_banner.png",
             "ready": "assets/ready.png",
             "go": "assets/go.png",
+            "victory": "assets/level_up.png",
+            "final_victory": "assets/victory.png"
         }
         for key, path in paths.items():
             try:

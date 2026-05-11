@@ -3,12 +3,12 @@
 
     # --- Config valide de base ---
     "highscore_filename": "highscores.json",
-    "lives": 1,
+    "lives": 3,
     "pacgum": 42,
     "points_per_pacgum": 10,
     "points_per_super_pacgum": 50,
     "points_per_ghost": 200,
-    "seed": 42,
+    "seed": 2,
     "level_max_time": 90,
 
     # --- Cle inconnue : doit etre ignoree silencieusement ---
@@ -24,23 +24,14 @@
     "levels": [
         {"width": 3, "height": 3},
         {"width": 10, "height": 10},
-        {"width": 21, "height": 21},
-        {"width": 20, "height": 21},
-        {"width": 21, "height": -10},
-        {"width": "grosse_erreur", "height": "aussi"},
-        {},
-        {"width": 31, "height": 31},
-        {"width": 25, "height": 25},
-        {"width": 27, "height": 27},
-        {"width": 33, "height": 33},
-        {"width": 21, "height": 35}
+        {"width": 15, "height": 12},
+        {"width": 18, "height": 8},
+        {"width": 14, "height": 10},
+        {"width": 10, "height": 10},
+        {"width": 10, "height": 10},
+        {"width": 10, "height": 10},
+        {"width": 5, "height": 20},
+        {"width": 3, "height": 12}
     ]
 
-    # --- Valeurs invalides a tester (decommente une ligne a la fois) ---
-
-    # "lives": -5,
-    # "lives": "trois",
-    # "points_per_pacgum": 99999,
-    # "seed": -1,
-    # "level_max_time": 5,
 }
