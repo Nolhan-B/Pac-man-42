@@ -68,7 +68,6 @@ class AssetManager:
 
         paths = {
             "main": "assets/banner.png",
-            "instructions": "assets/instruction_banner.png",
             "game_over": "assets/game_over_banner.png",
             "ready": "assets/ready.png",
             "go": "assets/go.png",
