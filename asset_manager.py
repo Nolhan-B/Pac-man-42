@@ -14,7 +14,7 @@ class AssetManager:
         self.ghosts: Dict[str, pygame.Surface] = {}
         self.banners: Dict[str, pygame.Surface] = {}
         self.menu_bg: Optional[pygame.Surface] = None
-        self.game_bg = None
+        self.game_bg: Optional[pygame.Surface] = None
 
     def load_all(self, screen_size: Tuple[int, int]) -> None:
         """Charge l'ensemble des ressources du jeu."""
@@ -30,9 +30,7 @@ class AssetManager:
             scaled_bg = pygame.transform.scale(bg, screen_size)
             scaled_bg.set_alpha(100)
 
-            self.game_bg: pygame.SurfaceType = pygame.Surface(
-                screen_size
-            ).convert()
+            self.game_bg = pygame.Surface(screen_size).convert()
             self.game_bg.fill((0, 0, 0))
             self.game_bg.blit(scaled_bg, (0, 0))
         except (pygame.error, FileNotFoundError):

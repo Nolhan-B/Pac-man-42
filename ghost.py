@@ -17,12 +17,12 @@ class Ghost():
         self.prev_x = self.pos_x
         self.prev_y = self.pos_y
         self._state = State.CHASE
-        self.direction = None
+        self.direction: Direction | None = None
         self.speed: float = 1.0
         self.engine: "Engine" = engine
         self.move_timer: float = 0.0
         self.frightened_timer: int = 0
-        self.pos_history = []
+        self.pos_history: list[tuple[int, int]] = []
 
     def set_state(self, new_state: State):
         if new_state == State.FRIGHTENED and self._state == State.DEAD:
@@ -34,7 +34,7 @@ class Ghost():
     def get_position(self) -> tuple[int, int]:
         return (self.pos_x, self.pos_y)
 
-    def force_u_turn(self):
+    def force_u_turn(self) -> None:
         # On inverse la direction actuelle de manière fluide
         if self.direction in OPPOSITES:
             if self.direction == Direction.NORTH:
@@ -70,6 +70,9 @@ class Ghost():
 
         elif self._state == State.DEAD:
             move = self._respawn(possible)
+        
+        else:
+            return
 
         # Met a jour la direction et la position
         self.prev_x = self.pos_x
@@ -98,7 +101,8 @@ class Ghost():
             return self.speed * 2.0
         return self.speed
 
-    def _get_possible_direction(self, layout):
+    def _get_possible_direction(self,
+                                layout: list[list[int]]) -> list[Direction]:
         pos_x, pos_y = self.pos_x, self.pos_y
         val = layout[pos_y][pos_x]
         possible = []
@@ -119,13 +123,16 @@ class Ghost():
         if (val & 8) == 0:
             possible.append(Direction.WEST)
 
+        if self.direction is None:
+            return possible
         forbidden = OPPOSITES.get(self.direction)
+
         if forbidden in possible and len(possible) > 1:
             possible.remove(forbidden)
 
         return possible
 
-    def _chase_pac_man(self, possible):
+    def _chase_pac_man(self, possible: list[Direction]) -> Direction:
         if random.random() < 0.35:
             return random.choice(possible)
         target: tuple = self.engine.player.get_position()
@@ -156,16 +163,17 @@ class Ghost():
 
         return best_direction
 
-    def _respawn(self, possible):
+    def _respawn(self, possible: list[Direction]) -> Direction:
         target: tuple = self._spawn
         if random.random() < 0.35:
             return random.choice(possible)
         move = self._get_direction(target, possible)
         return move
 
-    def _get_direction(self, target, possible):
+    def _get_direction(self, target: tuple[int, int],
+                       possible: list[Direction]) -> Direction:
         best_distance = float('inf')
-        best_direction = self.direction  # Valeur par défaut
+        best_direction = possible[0]  # Valeur par défaut
 
         # On définit le mouvement pour chaque direction
         # (delta_x, delta_y)
