@@ -62,10 +62,10 @@ class ConfigLoader:
             with open(self.filepath, "r", encoding="utf-8") as f:
                 return f.read()
         except FileNotFoundError:
-            print(f"Erreur : fichier introuvable : '{self.filepath}'")
+            print(f"Error : file '{self.filepath}' not foubd")
             raise SystemExit(1)
         except OSError as e:
-            print(f"Erreur : impossible de lire '{self.filepath}' : {e}")
+            print(f"Error: Can not read '{self.filepath}' : {e}")
             raise SystemExit(1)
 
     # del des commentaires dans les json
@@ -87,11 +87,12 @@ class ConfigLoader:
         try:
             raw = json.loads(content)
         except json.JSONDecodeError as e:
-            print(f"Erreur : JSON invalide dans '{self.filepath}' : {e}")
+            print(f"Error : '{self.filepath}' do not contain a valid "
+                  f"JSON structure : {e}")
             raise SystemExit(1)
 
         if not isinstance(raw, dict):
-            print(f"Erreur : '{self.filepath}' doit etre un objet JSON.")
+            print(f"Error : '{self.filepath}' must be a JSON object.")
             raise SystemExit(1)
 
         return raw
@@ -155,21 +156,21 @@ class ConfigLoader:
         # si c'est invalide, on log un warning et on retourne le defaut.
         if not isinstance(value, expected_type):
             logger.warning(
-                "Config '%s' : attendu %s, recu %s. Defaut: %s",
+                "Config '%s' : expected %s, got %s. Default: %s",
                 key, expected_type.__name__, type(value).__name__, default
             )
             return default
 
         if min_val is not None and value < min_val:
             logger.warning(
-                "Config '%s' : valeur %s trop petite, clampee a %s.",
+                "Config '%s' : value %s is too small, clamped at %s.",
                 key, value, min_val
             )
             return min_val
 
         if max_val is not None and value > max_val:
             logger.warning(
-                "Config '%s' : valeur %s trop grande, clampee a %s.",
+                "Config '%s' : valeur %s too high, clamped at %s.",
                 key, value, max_val
             )
             return max_val
@@ -183,17 +184,17 @@ class ConfigLoader:
 
         if not isinstance(raw_level, dict):
             logger.warning(
-                "Config : niveau %d invalide, defaut utilise.", index
+                "Config : level %d is not valid, default level used.", index
             )
             return dict(default_level)
 
         width = self._clamp(
             raw_level.get("width", default_level["width"]),
-            int, 5, 200, f"levels[{index}].width", default_level["width"]
+            int, 5, 19, f"levels[{index}].width", default_level["width"]
         )
         height = self._clamp(
             raw_level.get("height", default_level["height"]),
-            int, 5, 200, f"levels[{index}].height", default_level["height"]
+            int, 5, 19, f"levels[{index}].height", default_level["height"]
         )
 
         # pour eviter les erreurs faut que les dimensions du labyrinthe
@@ -201,13 +202,13 @@ class ConfigLoader:
         if width % 2 == 0:
             width += 1
             logger.warning(
-                "Config : levels[%d].width doit etre impair, ajuste a %d.",
+                "Config : levels[%d].width must be odd, ajusted to %d.",
                 index, width
             )
         if height % 2 == 0:
             height += 1
             logger.warning(
-                "Config : levels[%d].height doit etre impair, ajuste a %d.",
+                "Config : levels[%d].height must be odd, ajusted to %d.",
                 index, height
             )
 
@@ -223,8 +224,8 @@ class ConfigLoader:
 
         if not isinstance(raw, list) or len(raw) == 0:
             logger.warning(
-                "Config : 'levels' absent ou invalide, "
-                "%d niveaux par defaut generes.", min_levels
+                "Config : 'levels' missign or invalid, "
+                "%d defaut levels generated.", min_levels
             )
             return [dict(default_level) for _ in range(min_levels)]
 
@@ -233,7 +234,7 @@ class ConfigLoader:
         while len(levels) < min_levels:
             levels.append(dict(default_level))
             logger.warning(
-                "Config : pas assez de niveaux, niveau par defaut ajoute "
+                "Config : levels count is < 10, new levels added "
                 "(total : %d).", len(levels)
             )
 
