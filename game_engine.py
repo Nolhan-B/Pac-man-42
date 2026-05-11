@@ -57,13 +57,12 @@ class Engine():
         w = self.current_level.width
         h = self.current_level.height
         self.ghosts.clear()
-        self.ghosts.append(Ghost("red", 1, 1, self, (1, 1)))
-        self.ghosts.append(Ghost("blue", 1, w - 2, self, (w - 2, 1)))
-        self.ghosts.append(Ghost("pink", h - 2, 1, self, (1, h - 2)))
-        self.ghosts.append(Ghost("yellow", h - 2, w - 2, self, (w - 2, h - 2)))
+        self.ghosts.append(Ghost("red", 0, 0, self, (0, 0)))
+        self.ghosts.append(Ghost("blue", 0, w - 1, self, (w - 1, 0)))
+        self.ghosts.append(Ghost("pink", h - 1, 0, self, (0, h - 1)))
+        self.ghosts.append(Ghost("yellow", h - 1, w - 1, self, (w - 1, h - 1)))
 
     def _get_visual_pos_player(self) -> tuple[float, float]:
-        # calcule la position visuelle du player en pixels (sans offset maze)
         px = self.player.get_pos_x()
         py = self.player.get_pos_y()
         if px is None:
