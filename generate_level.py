@@ -28,10 +28,10 @@ class Level:
 
     def _init_put_gum(self) -> None:
         # 4 coin
-        c1 = (1, 1)
-        c2 = (self.width - 2, 1)
-        c3 = (1, self.height - 2)
-        c4 = (self.width - 2, self.height - 2)
+        c1 = (0, 0)
+        c2 = (self.width - 1, 0)
+        c3 = (0, self.height - 1)
+        c4 = (self.width - 1, self.height - 1)
 
         corners = [c1, c2, c3, c4]
         for y in range(self.height):
