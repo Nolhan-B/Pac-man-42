@@ -9,19 +9,19 @@ from player import Player
 class Engine():
     def __init__(self, level_id: int, config: ConfigLoader, player: Player):
         self.level_id: int = level_id
-        self.config = config
+        self.config: ConfigLoader = config
         self.player: Player = player
-        self.lives = config.lives
+        self.lives: int = config.lives
         self.ghosts: list[Ghost] = []
         self.cheat_invincible: bool = False
         self.cheat_freeze: bool = False
         self.cheat_speed: bool = False
         self.running: bool = True
         self.is_paused: bool = False
-        self.current_level: Level = None
-        self.invincibility_timer = 0
+        self.current_level: Level | None = None
+        self.invincibility_timer: int = 0
         self.dying = False
-        self.death_animation_timer = 60
+        self.death_animation_timer: int = 60
         self.c_s: int = 30  # mis a jour depuis le main apres init
         self.life_just_lost: bool = False
         self.level_just_changed: bool = False
@@ -30,6 +30,7 @@ class Engine():
         self.game_completed: bool = False
 
     def start_level_timer(self):
+        assert self.current_level is not None
         time_per_tile = 1.6
         area = self.current_level.width * self.current_level.height
         self.level_time_limit = area * time_per_tile
@@ -37,6 +38,7 @@ class Engine():
 
     def load_level(self, level_id: int) -> None:
         self.current_level = Level(level_id, self.config)
+        assert self.current_level is not None
         mid_x = self.current_level.width // 2
         mid_y = self.current_level.height // 2
         self.player.set_position(mid_x, mid_y)
@@ -54,6 +56,7 @@ class Engine():
             self.game_completed = True
 
     def _spawn_ghosts(self) -> None:
+        assert self.current_level is not None
         w = self.current_level.width
         h = self.current_level.height
         self.ghosts.clear()
@@ -110,10 +113,12 @@ class Engine():
     def take_pac_gum(self) -> None:
         y: int = self.player.get_pos_y()
         x: int = self.player.get_pos_x()
+        assert self.current_level is not None
         type_gum: str = self.current_level.check_and_eat_gum(y, x)
         self._process_gum(type_gum)
 
     def _process_gum(self, type_gum: str) -> None:
+        assert self.current_level is not None
         if type_gum == "SUPER":
             self.player.add_score(self.config.points_per_super_pacgum)
             self.current_level.total_gum -= 1
@@ -128,6 +133,7 @@ class Engine():
             return
 
     def _check_win(self) -> None:
+        assert self.current_level is not None
         if self.current_level.total_gum == 0:
             print(f"Level {self.level_id} ended!")
             if self.level_id >= len(self.config.levels) - 1:
@@ -179,6 +185,7 @@ class Engine():
     def run(self) -> None:
         if not self.running or self.is_paused:
             return
+        assert self.current_level is not None
 
         if self.time_left > 0:
             self.time_left -= 1/60
