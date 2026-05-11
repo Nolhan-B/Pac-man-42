@@ -41,17 +41,6 @@ class MazeRenderer(BaseRenderer):
                 if shape > 0:
                     self._draw_lines(self.maze_surface, ox, oy, shape, c_s)
 
-    def _draw_background_grid(
-        self, win_w: int, win_h: int, c_s: int
-    ) -> None:
-        """Dessine une grille de points subtile en arrière-plan."""
-        grid_color = (30, 30, 40)
-
-        for y in range(0, win_h, c_s):
-            for x in range(0, win_w, c_s):
-
-                pygame.draw.rect(self.screen, grid_color, (x, y, 1, 1))
-
     def _draw_lines(
         self, surface: pygame.Surface, ox: int, oy: int, shape: int, c_s: int
     ) -> None:
