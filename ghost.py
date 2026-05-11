@@ -215,6 +215,7 @@ class Ghost():
         time_to_move = 30.0
         self._state_timer()
         if self.move_timer >= time_to_move:
+            assert self.engine.current_level is not None
             layout = self.engine.current_level.layout
             self.move(layout)
             self.move_timer = 0.0
