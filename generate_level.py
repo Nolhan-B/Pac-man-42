@@ -1,5 +1,6 @@
 from mazegenerator.mazegenerator import MazeGenerator
 from parser import ConfigLoader
+import random
 
 
 class Level:
@@ -21,10 +22,10 @@ class Level:
 
     def _init_generator(self, level_id: int,
                         config: ConfigLoader) -> MazeGenerator:
-
         level_data = config.levels[level_id]
         size: tuple[int, int] = (level_data["width"], level_data["height"])
-        return (MazeGenerator(size=size, seed=config.seed))
+        seed = config.seed if level_id == 0 else random.randint(0, 99999999999)
+        return MazeGenerator(size=size, seed=seed)
 
     def _init_put_gum(self) -> None:
         # 4 coin

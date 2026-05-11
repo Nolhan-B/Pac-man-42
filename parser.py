@@ -170,7 +170,7 @@ class ConfigLoader:
 
         if max_val is not None and value > max_val:
             logger.warning(
-                "Config '%s' : valeur %s too high, clamped at %s.",
+                "Config '%s' : value %s too high, clamped at %s.",
                 key, value, max_val
             )
             return max_val

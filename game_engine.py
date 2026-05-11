@@ -47,7 +47,7 @@ class Engine():
 
     def next_level(self) -> None:
         self.level_id += 1
-        print(f"Now going for level {self.level_id}...")
+        print(f"Now going for level {self.level_id + 1}...")
         if self.level_id < len(self.config.levels):
             self.load_level(self.level_id)
             self.level_just_changed = True
@@ -135,12 +135,12 @@ class Engine():
     def _check_win(self) -> None:
         assert self.current_level is not None
         if self.current_level.total_gum == 0:
-            print(f"Level {self.level_id} ended!")
+            print(f"Level {self.level_id + 1} ended!")
             if self.level_id >= len(self.config.levels) - 1:
                 print("Final Victory !")
                 self.game_completed = True
             else:
-                print(f"Level {self.level_id} done !")
+                print(f"Level {self.level_id + 1} done !")
                 self.level_completed = True
 
     def _check_loose(self) -> None:
