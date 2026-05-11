@@ -90,7 +90,7 @@ class MazeRenderer(BaseRenderer):
     ) -> None:
         """Dessine les gommes avec animations de pulsation et brillance."""
         ticks = pygame.time.get_ticks()
-        dot_color = (255, 184, 174)
+        dot_color = (255, 140, 174)
 
         for y, row in enumerate(layout):
             for x, cell in enumerate(row):
@@ -123,7 +123,7 @@ class MazeRenderer(BaseRenderer):
                 # PAC-GUM NORMALE (Bit 16)
                 elif cell & 16:
                     # juste un point (peut etre un asset plus tard)
-                    size = 4
+                    size = 5
                     rect = (cx - size // 2, cy - size // 2, size, size)
                     pygame.draw.rect(self.screen, dot_color, rect)
 
