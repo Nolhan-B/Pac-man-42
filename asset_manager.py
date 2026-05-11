@@ -14,7 +14,7 @@ class AssetManager:
         self.ghosts: Dict[str, pygame.Surface] = {}
         self.banners: Dict[str, pygame.Surface] = {}
         self.menu_bg: Optional[pygame.Surface] = None
-        self.game_bg = None
+        self.game_bg: Optional[pygame.Surface] = None
 
     def load_all(self, screen_size: Tuple[int, int]) -> None:
         """Charge l'ensemble des ressources du jeu."""
