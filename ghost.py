@@ -70,7 +70,7 @@ class Ghost():
 
         elif self._state == State.DEAD:
             move = self._respawn(possible)
-        
+
         else:
             return
 
