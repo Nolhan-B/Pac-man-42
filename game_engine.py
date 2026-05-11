@@ -29,7 +29,7 @@ class Engine():
         self.time_left: float = 0.0
         self.game_completed: bool = False
 
-    def start_level_timer(self):
+    def start_level_timer(self) -> None:
         assert self.current_level is not None
         time_per_tile = 1.6
         area = self.current_level.width * self.current_level.height

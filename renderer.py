@@ -3,6 +3,7 @@ import pygame
 from asset_manager import AssetManager
 from constants import GameState
 from base_renderer import ActorRenderer, MazeRenderer, UIRenderer
+from HighscoreManager import PlayerScore
 
 
 class Renderer:
@@ -72,7 +73,8 @@ class Renderer:
         self.ui_p.draw_pause(win_w, win_h, selection, confirm)
         pygame.display.flip()
 
-    def draw_highscores(self, win_w: int, win_h: int, scores: list) -> None:
+    def draw_highscores(self, win_w: int, win_h: int,
+                        scores: list[PlayerScore]) -> None:
         self.ui_p.draw_highscores(win_w, win_h, scores)
         pygame.display.flip()
 

@@ -135,7 +135,7 @@ class Ghost():
     def _chase_pac_man(self, possible: list[Direction]) -> Direction:
         if random.random() < 0.35:
             return random.choice(possible)
-        target: tuple = self.engine.player.get_position()
+        target: tuple[int, int] = self.engine.player.get_position()
         move = self._get_direction(target, possible)
         return move
 
