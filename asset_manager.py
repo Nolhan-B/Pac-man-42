@@ -24,17 +24,17 @@ class AssetManager:
         self._load_back_maze(screen_size)  # On passe la taille ici
 
     def _load_back_maze(self, screen_size: Tuple[int, int]) -> None:
-        """Charge et prépare l'image de fond."""
+        """Charge l'image de fond"""
         try:
             bg = pygame.image.load("assets/background.png").convert()
-            # taille de la fenêtre
-            self.game_bg = pygame.transform.scale(bg, screen_size)
-            # Opacité (0-255). 80-100 est idéal pour un fond discret
-            self.game_bg.set_alpha(100)
+            scaled_bg = pygame.transform.scale(bg, screen_size)
+            scaled_bg.set_alpha(100)
 
+            self.game_bg = pygame.Surface(screen_size).convert()
+            self.game_bg.fill((0, 0, 0))
+            self.game_bg.blit(scaled_bg, (0, 0))
         except (pygame.error, FileNotFoundError):
-            print("Warning: assets/background.png non trouvé.")
-            self.game_bg = pygame.Surface(screen_size)
+            self.game_bg = pygame.Surface(screen_size).convert()
             self.game_bg.fill((0, 0, 0))
 
     def _load_pacman(self) -> None:

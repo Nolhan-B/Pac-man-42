@@ -97,7 +97,7 @@ def main() -> None:
                             is_fullscreen = not is_fullscreen
                             if is_fullscreen:
                                 screen = pygame.display.set_mode(
-                                    (0, 0), pygame.FULLSCREEN
+                                    (0, 0), pygame.FULLSCREEN | pygame.SCALED
                                 )
                             else:
                                 screen = pygame.display.set_mode(
@@ -176,6 +176,11 @@ def main() -> None:
                     if event.key == pygame.K_RETURN:
                         game_state = GameState.ENTER_NAME
 
+                elif game_state == GameState.GAME_COMPLETED:
+                    # quitter l'écran de victoire finale
+                    if event.key in (pygame.K_RETURN, pygame.K_ESCAPE):
+                        game_state = GameState.ENTER_NAME
+
                 elif game_state == GameState.ENTER_NAME:
                     if event.key == pygame.K_RETURN and len(player_name) > 0:
                         ps = PlayerScore(player_name, player.score)
@@ -224,24 +229,60 @@ def main() -> None:
             engine.cheat_freeze = cheats["freeze"]
             engine.run()
 
+            # conditions de fin/victoire/mort
             if not engine.running:
                 game_state = GameState.GAME_OVER
+
+            elif getattr(engine, 'game_completed', False):
+                engine.game_completed = False
+                game_state = GameState.GAME_COMPLETED
+
+            elif getattr(engine, 'level_completed', False):
+                engine.level_completed = False
+                countdown, frame_timer = 2, 0  # 2 secondes d'affichage
+                game_state = GameState.LEVEL_COMPLETED
+
             elif getattr(engine, 'life_just_lost', False):
                 engine.life_just_lost = False
                 countdown, frame_timer = 1, 0
                 game_state = GameState.COUNTDOWN
+
             elif getattr(engine, 'level_just_changed', False):
                 engine.level_just_changed = False
                 countdown, frame_timer = 1, 0
                 game_state = GameState.COUNTDOWN
                 renderer.maze_p.maze_surface = None
-                # On vide la mémoire de Pac-Man !
                 player.current_direction = None
                 player.next_direction = None
 
             renderer.draw_game(
                 engine, game_state, countdown,
                 frame_timer, show_cheats, cheats
+            )
+
+        elif game_state == GameState.LEVEL_COMPLETED:
+            frame_timer += 2
+            if frame_timer >= 60:
+                frame_timer = 0
+                countdown -= 1
+
+            if countdown < 0:
+                engine.next_level()
+                engine.level_just_changed = False
+                countdown, frame_timer = 1, 0
+                game_state = GameState.COUNTDOWN
+                renderer.maze_p.maze_surface = None
+                player.current_direction = None
+                player.next_direction = None
+
+            renderer.draw_game(
+                engine, game_state, countdown,
+                frame_timer, show_cheats, cheats
+            )
+
+        elif game_state == GameState.GAME_COMPLETED:
+            renderer.draw_game(
+                engine, game_state, 0, 0, show_cheats, cheats
             )
 
         elif game_state == GameState.PAUSE:

@@ -35,7 +35,7 @@ class Renderer:
     def draw_game(self, engine: Any, game_state: GameState, countdown: int,
                   timer: int, show_cheats: bool,
                   cheats: Optional[Dict[str, bool]] = None) -> None:
-        self.screen.fill((0, 0, 0))
+
         if self.assets.game_bg:
             self.screen.blit(self.assets.game_bg, (0, 0))
         else:
@@ -53,7 +53,11 @@ class Renderer:
             self.ui_p.draw_banner(banner, self.screen.get_width(), timer)
         if game_state == GameState.GAME_OVER:
             self.ui_p.draw_banner("game_over", self.screen.get_width(), 0)
-
+        if game_state.name == "LEVEL_COMPLETED":
+            self.ui_p.draw_banner("victory", self.screen.get_width(), timer)
+        if game_state.name == "GAME_COMPLETED":
+            self.ui_p.draw_banner("final_victory", self.screen.get_width(),
+                                  timer)
         if show_cheats and cheats is not None:
             self.ui_p.draw_cheats_overlay(cheats)
 

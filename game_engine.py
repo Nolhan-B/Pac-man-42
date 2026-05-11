@@ -27,6 +27,7 @@ class Engine():
         self.level_just_changed: bool = False
         self.level_time_limit: float = 0.0
         self.time_left: float = 0.0
+        self.game_completed: bool = False
 
     def start_level_timer(self):
         time_per_tile = 1.6
@@ -50,7 +51,7 @@ class Engine():
             self.level_just_changed = True
         else:
             print("Congrats ! You finished the game !")
-            self.running = False
+            self.game_completed = True
 
     def _spawn_ghosts(self) -> None:
         w = self.current_level.width
@@ -129,8 +130,13 @@ class Engine():
 
     def _check_win(self) -> None:
         if self.current_level.total_gum == 0:
-            print(f"Niveau {self.level_id} Termine !")
-            self.next_level()
+            print(f"Level {self.level_id} ended!")
+            if self.level_id >= len(self.config.levels) - 1:
+                print("Final Victory !")
+                self.game_completed = True
+            else:
+                print(f"Niveau {self.level_id} Termine !")
+                self.level_completed = True
 
     def _check_loose(self) -> None:
         if self.player.lives <= 0:

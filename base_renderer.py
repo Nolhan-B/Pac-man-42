@@ -348,9 +348,13 @@ class UIRenderer(BaseRenderer):
             y = (self.screen.get_height() - scaled.get_height()) // 2
             self.screen.blit(scaled, (x, int(y + offset_y)))
         else:
-            labels = {"ready": "READY?", "go": "GO!", "game_over": "GAME OVER"}
+            labels = {"ready": "READY?", "go": "GO!", "game_over": "GAME OVER",
+                      "victory": "LEVEL CLEARED!", "final_victory": "CHAMPION!"
+                      }
             txt = labels.get(name, name.upper())
-            col = (255, 50, 50) if name == "game_over" else (255, 220, 0)
+            col = (255, 215, 0) if "victory" in name else (255, 220, 0)
+            if name == "game_over":
+                col = (255, 50, 50)
             surf = self.f_xl.render(txt, True, col)
             x = (window_w - surf.get_width()) // 2
             y = (self.screen.get_height() - surf.get_height()) // 2
@@ -572,7 +576,7 @@ class UIRenderer(BaseRenderer):
     ) -> None:
         self.screen.fill((0, 0, 0))
 
-        t1 = self.f_xl.render("GAME OVER", True, (255, 50, 50))
+        t1 = self.f_xl.render("Save Your Score", True, (255, 50, 50))
         self.screen.blit(
             t1, ((window_w - t1.get_width()) // 2, window_h // 5)
         )
