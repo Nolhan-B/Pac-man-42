@@ -97,7 +97,7 @@ def main() -> None:
                             is_fullscreen = not is_fullscreen
                             if is_fullscreen:
                                 screen = pygame.display.set_mode(
-                                    (0, 0), pygame.FULLSCREEN | pygame.SCALED
+                                    (0, 0), pygame.FULLSCREEN
                                 )
                             else:
                                 screen = pygame.display.set_mode(
