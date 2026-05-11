@@ -7,14 +7,14 @@ logger = logging.getLogger(__name__)
 class Player:
     def __init__(self, config: ConfigLoader) -> None:
         self.lives = config.lives
-        self._pos_x: int = None
-        self._pos_y: int = None
+        self._pos_x: int | None = None
+        self._pos_y: int | None = None
         self.score: int = 0
-        self.current_direction: Direction = None
-        self.next_direction: Direction = None
+        self.current_direction: Direction | None = None
+        self.next_direction: Direction | None = None
         self.move_timer: float = 0.0
         self.speed: float = 20.0
-        self.spawn: tuple[int][int] = None
+        self.spawn: tuple[int][int] | None = None
 
     def _init_player_pos(self, maze_size_x: int, maze_size_y: int) -> None:
         self._pos_x = maze_size_x // 2

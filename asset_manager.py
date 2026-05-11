@@ -30,7 +30,9 @@ class AssetManager:
             scaled_bg = pygame.transform.scale(bg, screen_size)
             scaled_bg.set_alpha(100)
 
-            self.game_bg = pygame.Surface(screen_size).convert()
+            self.game_bg: pygame.SurfaceType = pygame.Surface(
+                screen_size
+            ).convert()
             self.game_bg.fill((0, 0, 0))
             self.game_bg.blit(scaled_bg, (0, 0))
         except (pygame.error, FileNotFoundError):
