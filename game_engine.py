@@ -134,7 +134,7 @@ class Engine():
                 print("Final Victory !")
                 self.game_completed = True
             else:
-                print(f"Niveau {self.level_id} Termine !")
+                print(f"Niveau {self.level_id} done !")
                 self.level_completed = True
 
     def _check_loose(self) -> None:

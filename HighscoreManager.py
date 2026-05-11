@@ -53,8 +53,8 @@ class HighscoreManager:
             logger.warning("Suppressing file content for safety...")
             try:
                 open(self.filepath, 'w').close()
-            except (PermissionError, OSError):
-                logger.warning(f"Impossible de vider {self.filepath}")
+            except (PermissionError, OSError) as e:
+                logger.warning(f"Can not empty {self.filepath} : {e}")
             finally:
                 self.scores = []
 
