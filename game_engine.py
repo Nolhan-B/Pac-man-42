@@ -30,10 +30,10 @@ class Engine():
         self.game_completed: bool = False
 
     def start_level_timer(self) -> None:
-        assert self.current_level is not None
-        time_per_tile = 1.6
-        area = self.current_level.width * self.current_level.height
-        self.level_time_limit = area * time_per_tile
+        # assert self.current_level is not None
+        # time_per_tile = 1.6
+        # area = self.current_level.width * self.current_level.height
+        self.level_time_limit = self.config.level_max_time
         self.time_left = self.level_time_limit
 
     def load_level(self, level_id: int) -> None:
