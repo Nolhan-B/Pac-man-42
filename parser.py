@@ -15,7 +15,7 @@ DEFAULTS: dict[str, Any] = {
     "seed": 42,
     "level_max_time": 90,
     "levels": [
-        {"width": 21, "height": 21},
+        {"width": 13, "height": 13},
     ],
 }
 
@@ -82,18 +82,23 @@ class ConfigLoader:
     # parsing json
 
     def _parse_json(self, content: str) -> dict[str, Any]:
-        # parse le JSON sans commentaires, si c'est pas du JSON valide ou
-        # pas un objet (genre une liste), on exit avec un message clair.
         try:
             raw = json.loads(content)
         except json.JSONDecodeError as e:
-            print(f"Error : '{self.filepath}' do not contain a valid "
-                  f"JSON structure : {e}")
-            raise SystemExit(1)
+            logger.warning(
+                "Config : '%s' is not valid JSON : %s. "
+                "All defaults will be used.",
+                self.filepath, e
+            )
+            return {}
 
         if not isinstance(raw, dict):
-            print(f"Error : '{self.filepath}' must be a JSON object.")
-            raise SystemExit(1)
+            logger.warning(
+                "Config : '%s' must be a JSON object. "
+                "All defaults will be used.",
+                self.filepath
+            )
+            return {}
 
         return raw
 
@@ -107,6 +112,7 @@ class ConfigLoader:
             str, None, None,
             "highscore_filename", DEFAULTS["highscore_filename"]
         )
+        print(raw.get("lives"))
         self.lives = self._clamp(
             raw.get("lives", DEFAULTS["lives"]),
             int, 1, 10, "lives", DEFAULTS["lives"]

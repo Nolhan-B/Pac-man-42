@@ -3,7 +3,7 @@
 
     # --- Config valide de base ---
     "highscore_filename": "highscores.json",
-    "lives": 3,
+    "lives": -3,
     "foo": "bar",
     "pacgum": 42,
     "points_per_pacgum": 10,
