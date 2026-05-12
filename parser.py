@@ -108,7 +108,11 @@ class ConfigLoader:
         # on valide chaque cle connue et on assigne direct sur self
         # les cles inconnues sont ignorees automatiquement
         self.highscore_filename = self._clamp(
-            self._get(raw, "highscore_filename", DEFAULTS["highscore_filename"]),
+            self._get(
+                raw,
+                "highscore_filename",
+                DEFAULTS["highscore_filename"]
+            ),
             str, None, None,
             "highscore_filename", DEFAULTS["highscore_filename"]
         )
