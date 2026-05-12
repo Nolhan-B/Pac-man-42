@@ -13,9 +13,9 @@ DEFAULTS: dict[str, Any] = {
     "points_per_super_pacgum": 50,
     "points_per_ghost": 200,
     "seed": 42,
-    "level_max_time": 90,
+    "level_max_time": 240,
     "levels": [
-        {"width": 21, "height": 21},
+        {"width": 13, "height": 13},
     ],
 }
 
@@ -82,18 +82,23 @@ class ConfigLoader:
     # parsing json
 
     def _parse_json(self, content: str) -> dict[str, Any]:
-        # parse le JSON sans commentaires, si c'est pas du JSON valide ou
-        # pas un objet (genre une liste), on exit avec un message clair.
         try:
             raw = json.loads(content)
         except json.JSONDecodeError as e:
-            print(f"Error : '{self.filepath}' do not contain a valid "
-                  f"JSON structure : {e}")
-            raise SystemExit(1)
+            logger.warning(
+                "Config : '%s' is not valid JSON : %s. "
+                "All defaults will be used.",
+                self.filepath, e
+            )
+            return {}
 
         if not isinstance(raw, dict):
-            print(f"Error : '{self.filepath}' must be a JSON object.")
-            raise SystemExit(1)
+            logger.warning(
+                "Config : '%s' must be a JSON object. "
+                "All defaults will be used.",
+                self.filepath
+            )
+            return {}
 
         return raw
 
@@ -103,24 +108,25 @@ class ConfigLoader:
         # on valide chaque cle connue et on assigne direct sur self
         # les cles inconnues sont ignorees automatiquement
         self.highscore_filename = self._clamp(
-            raw.get("highscore_filename", DEFAULTS["highscore_filename"]),
+            self._get(raw, "highscore_filename", DEFAULTS["highscore_filename"]),
             str, None, None,
             "highscore_filename", DEFAULTS["highscore_filename"]
         )
         self.lives = self._clamp(
-            raw.get("lives", DEFAULTS["lives"]),
+            self._get(raw, "lives", DEFAULTS["lives"]),
             int, 1, 10, "lives", DEFAULTS["lives"]
         )
         self.pacgum = self._clamp(
-            raw.get("pacgum", DEFAULTS["pacgum"]),
+            self._get(raw, "pacgum", DEFAULTS["pacgum"]),
             int, 1, 1000, "pacgum", DEFAULTS["pacgum"]
         )
         self.points_per_pacgum = self._clamp(
-            raw.get("points_per_pacgum", DEFAULTS["points_per_pacgum"]),
+            self._get(raw, "points_per_pacgum", DEFAULTS["points_per_pacgum"]),
             int, 0, 10000, "points_per_pacgum", DEFAULTS["points_per_pacgum"]
         )
         self.points_per_super_pacgum = self._clamp(
-            raw.get(
+            self._get(
+                raw,
                 "points_per_super_pacgum",
                 DEFAULTS["points_per_super_pacgum"]
             ),
@@ -128,15 +134,15 @@ class ConfigLoader:
             "points_per_super_pacgum", DEFAULTS["points_per_super_pacgum"]
         )
         self.points_per_ghost = self._clamp(
-            raw.get("points_per_ghost", DEFAULTS["points_per_ghost"]),
+            self._get(raw, "points_per_ghost", DEFAULTS["points_per_ghost"]),
             int, 0, 10000, "points_per_ghost", DEFAULTS["points_per_ghost"]
         )
         self.seed = self._clamp(
-            raw.get("seed", DEFAULTS["seed"]),
+            self._get(raw, "seed", DEFAULTS["seed"]),
             int, 0, 2**32 - 1, "seed", DEFAULTS["seed"]
         )
         self.level_max_time = self._clamp(
-            raw.get("level_max_time", DEFAULTS["level_max_time"]),
+            self._get(raw, "level_max_time", DEFAULTS["level_max_time"]),
             int, 10, 600, "level_max_time", DEFAULTS["level_max_time"]
         )
         self.levels = self._parse_levels(raw.get("levels"))
@@ -239,3 +245,11 @@ class ConfigLoader:
             )
 
         return levels
+
+    def _get(self, raw: dict[str, Any], key: str, default: Any) -> Any:
+        if key not in raw:
+            logger.warning(
+                "Config : key '%s' not found, using default: %s", key, default
+            )
+            return default
+        return raw[key]
