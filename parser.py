@@ -116,9 +116,15 @@ class ConfigLoader:
             str, None, None,
             "highscore_filename", DEFAULTS["highscore_filename"]
         )
+        raw_lives = self._get(raw, "lives", DEFAULTS["lives"])
+        if isinstance(raw_lives, int) and raw_lives < 0:
+            logger.warning(
+                "Config 'lives' : negative value %d is invalid, "
+                "using default: %d", raw_lives, DEFAULTS["lives"]
+            )
+            raw_lives = DEFAULTS["lives"]
         self.lives = self._clamp(
-            self._get(raw, "lives", DEFAULTS["lives"]),
-            int, 1, 10, "lives", DEFAULTS["lives"]
+            raw_lives, int, 1, 10, "lives", DEFAULTS["lives"]
         )
         self.pacgum = self._clamp(
             self._get(raw, "pacgum", DEFAULTS["pacgum"]),
