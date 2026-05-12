@@ -199,6 +199,7 @@ def main() -> None:
             cheats["invincible"] = False
             cheats["speed"] = False
             cheats["freeze"] = False
+            show_cheats = False
             renderer.draw_menu(win_w, win_h, menu_selection)
 
         elif game_state == GameState.ENTER_NAME:
