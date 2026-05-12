@@ -40,7 +40,7 @@ It is implemented using a separate JSON file. I chose this implementation becaus
 ## Maze Generation
 This project integrates an external maze generator package called `A-Maze-ing` (provided by another team). 
 
-The game does not use a custom generation algorithm. Instead, a wrapper interfaces with the external package. The generator is called with the `PERFECT = False` parameter to ensure loops and corridors suitable for Pac-Man gameplay. The first level uses a fixed seed for evaluation consistency, while subsequent levels generate random layouts. If the external generator fails, a safe fallback map is provided to prevent the game from crashing.
+The game does not use a custom generation algorithm. Instead, a wrapper interfaces with the external package. The generator is called with the `PERFECT = False` parameter to ensure loops and corridors suitable for Pac-Man gameplay. The first level uses a fixed seed for evaluation consistency, while subsequent levels generate random layouts.
 
 ## Implementation
 The game loop runs at a fixed 60 FPS using `pygame.time.Clock()`. 

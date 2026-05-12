@@ -47,8 +47,8 @@ class Engine():
 
     def next_level(self) -> None:
         self.level_id += 1
-        print(f"Now going for level {self.level_id + 1}...")
         if self.level_id < len(self.config.levels):
+            print(f"Now going for level {self.level_id + 1}...")
             self.load_level(self.level_id)
             self.level_just_changed = True
         else:
