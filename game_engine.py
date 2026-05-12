@@ -111,10 +111,28 @@ class Engine():
                 self.c_s // 2, gy * self.c_s + offset_y + self.c_s // 2)
 
     def take_pac_gum(self) -> None:
-        y: int = self.player.get_pos_y()
-        x: int = self.player.get_pos_x()
+        px = self.player.get_pos_x()
+        py = self.player.get_pos_y()
+
+        offset_x: float = 0.0
+        offset_y: float = 0.0
+
+        if self.player.current_direction is not None:
+            progress = self.player.move_timer / self.player.speed
+            if self.player.current_direction == Direction.NORTH:
+                offset_y = -progress
+            elif self.player.current_direction == Direction.SOUTH:
+                offset_y = progress
+            elif self.player.current_direction == Direction.WEST:
+                offset_x = -progress
+            elif self.player.current_direction == Direction.EAST:
+                offset_x = progress
+
+        #  pos mathématique reel
+        exact_x = px + offset_x
+        exact_y = py + offset_y
         assert self.current_level is not None
-        type_gum: str = self.current_level.check_and_eat_gum(y, x)
+        type_gum: str = self.current_level.check_and_eat_gum(exact_y, exact_x)
         self._process_gum(type_gum)
 
     def _process_gum(self, type_gum: str) -> None:

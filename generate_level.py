@@ -7,6 +7,7 @@ except ModuleNotFoundError:
     sys.exit(1)
 from parser import ConfigLoader
 import random
+import math
 
 
 class Level:
@@ -58,17 +59,23 @@ class Level:
                     self.layout[y][x] |= 16
                     self.total_gum += 1
 
-    def check_and_eat_gum(self, player_posy: int, player_posx: int) -> str:
-        val = self.layout[player_posy][player_posx]
+    def check_and_eat_gum(self, player_y: float, player_x: float) -> str:
+        ix = int(round(player_x))
+        iy = int(round(player_y))
 
-        # Test de la Super-gum (bit 32)
+        if not (0 <= iy < self.height and 0 <= ix < self.width):
+            return "NONE"
+        distance = math.sqrt((player_x - ix)**2 + (player_y - iy)**2)
+        if distance > 0.4:
+            return "NONE"
+        val = self.layout[iy][ix]
+
         if val & 32:
-            self.layout[player_posy][player_posx] &= ~self.SUPER_PACGUM
+            self.layout[iy][ix] &= ~self.SUPER_PACGUM
             return "SUPER"
 
-        # Test de la Pac-gum normale (bit 16)
         if val & 16:
-            self.layout[player_posy][player_posx] &= ~self.PACGUM
+            self.layout[iy][ix] &= ~self.PACGUM
             return "NORMAL"
-        # Rien trouvé
+
         return "NONE"
