@@ -47,7 +47,7 @@ class AssetManager:
                 self.pacman_west.append(
                     pygame.image.load(pw).convert_alpha()
                 )
-        except Exception as e:
+        except FileNotFoundError as e:
             logger.warning("Missing Pac-Man sprites: %s", e)
 
     def _load_ghosts(self) -> None:
@@ -56,14 +56,14 @@ class AssetManager:
             try:
                 p = f"assets/ghost_{c}.png"
                 self.ghosts[c] = pygame.image.load(p).convert_alpha()
-            except Exception as e:
+            except FileNotFoundError as e:
                 logger.warning("Missing ghost sprite '%s': %s", c, e)
 
     def _load_ui(self, size: Tuple[int, int]) -> None:
         try:
             bg = pygame.image.load("assets/menu_bg.png").convert()
             self.menu_bg = pygame.transform.smoothscale(bg, size)
-        except Exception as e:
+        except FileNotFoundError as e:
             logger.warning("Missing menu background: %s", e)
 
         paths = {
@@ -78,5 +78,5 @@ class AssetManager:
             try:
                 img = pygame.image.load(path).convert_alpha()
                 self.banners[key] = img
-            except Exception as e:
+            except FileNotFoundError as e:
                 logger.warning("Missing banner '%s': %s", key, e)

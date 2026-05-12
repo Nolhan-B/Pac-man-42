@@ -294,7 +294,7 @@ class UIRenderer(BaseRenderer):
             f"Score: {engine.player.score}", True, (255, 255, 255)
         )
         l_txt = self.f_sm.render(
-            f"Vies: {engine.player.lives}", True, (255, 255, 255)
+            f"Lives: {engine.player.lives}", True, (255, 255, 255)
         )
         lv_txt = self.f_sm.render(
             f"Level: {engine.level_id + 1}", True, (255, 255, 255)

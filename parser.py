@@ -62,7 +62,7 @@ class ConfigLoader:
             with open(self.filepath, "r", encoding="utf-8") as f:
                 return f.read()
         except FileNotFoundError:
-            print(f"Error : file '{self.filepath}' not foubd")
+            print(f"Error : file '{self.filepath}' not found")
             raise SystemExit(1)
         except OSError as e:
             print(f"Error: Can not read '{self.filepath}' : {e}")

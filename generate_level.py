@@ -1,4 +1,10 @@
-from mazegenerator.mazegenerator import MazeGenerator
+import sys
+try:
+    from mazegenerator.mazegenerator import MazeGenerator
+except ModuleNotFoundError:
+    print("Error: Missing or incorrect Mazegenerator module."
+          " End of program.")
+    sys.exit(1)
 from parser import ConfigLoader
 import random
 
