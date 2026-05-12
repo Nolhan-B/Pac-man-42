@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 DEFAULTS: dict[str, Any] = {
     "highscore_filename": "highscores.json",
     "lives": 3,
-    "pacgum": 42,
     "points_per_pacgum": 10,
     "points_per_super_pacgum": 50,
     "points_per_ghost": 200,
@@ -38,7 +37,6 @@ class ConfigLoader:
         # puis ecrases par load() si le fichier est valide
         self.highscore_filename: str = DEFAULTS["highscore_filename"]
         self.lives: int = DEFAULTS["lives"]
-        self.pacgum: int = DEFAULTS["pacgum"]
         self.points_per_pacgum: int = DEFAULTS["points_per_pacgum"]
         self.points_per_super_pacgum: int = DEFAULTS["points_per_super_pacgum"]
         self.points_per_ghost: int = DEFAULTS["points_per_ghost"]
@@ -125,10 +123,6 @@ class ConfigLoader:
             raw_lives = DEFAULTS["lives"]
         self.lives = self._clamp(
             raw_lives, int, 1, 10, "lives", DEFAULTS["lives"]
-        )
-        self.pacgum = self._clamp(
-            self._get(raw, "pacgum", DEFAULTS["pacgum"]),
-            int, 1, 1000, "pacgum", DEFAULTS["pacgum"]
         )
         self.points_per_pacgum = self._clamp(
             self._get(raw, "points_per_pacgum", DEFAULTS["points_per_pacgum"]),
