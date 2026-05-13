@@ -1,3 +1,4 @@
 pygame
 mypy
 flake8
+pyinstaller

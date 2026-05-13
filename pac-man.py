@@ -20,11 +20,14 @@ def _reset_game(config: ConfigLoader) -> tuple[Player, Engine]:
 
 def main() -> None:
     """Initialize Pygame, manage game states, and run the main event loop."""
-    if len(sys.argv) != 2:
+    config_file = "config.json"
+    if len(sys.argv) == 2:
+        config_file = sys.argv[1]
+    elif len(sys.argv) > 2:
         print("Usage: python3 pac-man.py <config_file.json>")
         raise SystemExit(1)
 
-    config = ConfigLoader(sys.argv[1])
+    config = ConfigLoader(config_file)
     config.load()
 
     C_S = 42

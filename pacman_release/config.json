@@ -1,0 +1,36 @@
+{
+    # ceci est un commentaire, doit etre ignore par le parser
+
+    # --- Config valide de base ---
+    "highscore_filename": "highscores.json",
+    "lives": 1,
+    "points_per_pacgum": 10,
+    "points_per_super_pacgum": 50,
+    "points_per_ghost": 200,
+    "seed": 42,
+    "level_max_time": 100,
+
+    # --- Cle inconnue : doit etre ignoree silencieusement ---
+    "cle_inconnue_random": "valeur_ignoree",
+
+    # --- Niveaux ---
+    # levels[0] : valide, dimensions impaires -> ok
+    # levels[1] : width paire -> doit etre ajustee a 21
+    # levels[2] : height negative -> doit etre clampee a 5 (min)
+    # levels[3] : width et height en string -> doit tomber sur le defaut
+    # levels[4] : niveau vide -> width et height tombent sur le defaut
+    # levels[5] a [9] : valides, juste pour atteindre les 10 niveaux requis
+    "levels": [
+        {"width":6, "height": 10},
+        {"width": 14, "height": 14},
+        {"width": 12, "height": 12},
+        {"width": 20, "height": 21},
+        {"width": 5, "height": 10},
+        {"width": 18, "height": 16},
+        {"width": 11, "height": 11},
+        {"width": 13, "height": 11},
+        {"width": 9, "height": 7},
+        {"width": 5, "height": 19}
+    ]
+
+}

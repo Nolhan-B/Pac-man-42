@@ -1,0 +1,12 @@
+=========================================
+      PAC-MAN REFACTORED - 42
+=========================================
+
+HOW TO PLAY:
+- UP, DOWN, LEFT, RIGHT : Move Pac-Man
+- P or ESCAPE           : Pause the game
+- TAB                   : Show Cheat Menu
+- ENTER                 : Select in menus
+
+CONFIGURATION:
+Edit 'config.json' to modify lives, points, or maze size.

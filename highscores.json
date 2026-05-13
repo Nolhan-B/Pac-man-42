@@ -1,12 +1,38 @@
 [
     {
-        "name":  "❤️",
-        "score": 90
+        "name": "r",
+        "score": 1580
+    },
+    {
+        "name": "t",
+        "score": 600
+    },
+    {
+        "name": "oh",
+        "score": 350
+    },
+    {
+        "name": "w",
+        "score": 230
+    },
+    {
+        "name": "ik",
+        "score": 200
+    },
+    {
+        "name": "r",
+        "score": 140
+    },
+    {
+        "name": "f",
+        "score": 110
+    },
+    {
+        "name": "t",
+        "score": 100
     },
     {
         "name": "f f",
-        "score": 100,
         "score": 50
-   
     }
 ]
