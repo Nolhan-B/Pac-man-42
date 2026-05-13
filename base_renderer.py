@@ -626,7 +626,7 @@ class UIRenderer(BaseRenderer):
             f"I -> Invincible : {status(cheats['invincible'])}",
             f"F -> Freeze ghosts : {status(cheats['freeze'])}",
             f"S -> Speed : {status(cheats['speed'])}",
-            "N -> Next level", "V -> +1 Life", "", "TAB -> Fermer"
+            "N -> Next level", "V -> +1 Life", "", "TAB -> Close"
         ]
         for i, line in enumerate(lines):
             font = self.f_xl if i == 0 else self.f_sm
