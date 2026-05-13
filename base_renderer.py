@@ -1,3 +1,5 @@
+"""Base rendering classes for the maze, actors, and UI components."""
+
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, Dict
 from constants import Direction, State
@@ -7,25 +9,31 @@ from asset_manager import AssetManager
 
 
 class BaseRenderer(ABC):
+    """Abstract base class for all game renderers."""
 
     def __init__(self, screen: pygame.Surface, assets: AssetManager) -> None:
+        """Initialize renderer with screen and assets."""
         self.screen = screen
         self.assets = assets
 
     @abstractmethod
     def draw(self, *args: Any, **kwargs: Any) -> None:
+        """Abstract draw method to be implemented by subclasses."""
         pass
 
 
 class MazeRenderer(BaseRenderer):
+    """Handles rendering of the maze layout and items."""
 
     def __init__(self, screen: pygame.Surface, assets: AssetManager) -> None:
+        """Initialize the maze renderer."""
         super().__init__(screen, assets)
         self.maze_surface: Optional[pygame.Surface] = None
 
     def pre_render(
         self, layout: List[List[int]], w: int, h: int, c_s: int
     ) -> None:
+        """Pre-render the static maze layout to a surface for performance."""
         if c_s <= 0:
             return
 
@@ -44,6 +52,7 @@ class MazeRenderer(BaseRenderer):
     def _draw_lines(
         self, surface: pygame.Surface, ox: int, oy: int, shape: int, c_s: int
     ) -> None:
+        """Draw maze walls based on the cell shape bitmask."""
         color = (33, 33, 255)
         t = 8
         if shape & 1:
@@ -64,6 +73,7 @@ class MazeRenderer(BaseRenderer):
     def draw(
         self, layout: List[List[int]], mx: int, my: int, c_s: int
     ) -> None:
+        """Draw the maze and its items on the screen."""
         if self.maze_surface:
             self.screen.blit(self.maze_surface, (mx, my))
         else:
@@ -77,7 +87,7 @@ class MazeRenderer(BaseRenderer):
     def _draw_items(
         self, layout: List[List[int]], mx: int, my: int, c_s: int
     ) -> None:
-        """Dessine les gommes avec animations de pulsation et brillance."""
+        """Draw pac-gums and super pac-gums with animations."""
         ticks = pygame.time.get_ticks()
         dot_color = (255, 140, 174)
 
@@ -118,8 +128,10 @@ class MazeRenderer(BaseRenderer):
 
 
 class ActorRenderer(BaseRenderer):
+    """Handles rendering of Pac-Man and ghosts."""
 
     def __init__(self, screen: pygame.Surface, assets: AssetManager) -> None:
+        """Initialize the actor renderer."""
         super().__init__(screen, assets)
         self.tick: int = 0
 
@@ -142,6 +154,7 @@ class ActorRenderer(BaseRenderer):
         self, p: Any, layout: List[List[int]], mx: int, my: int,
         c_s: int, inv_timer: int
     ) -> None:
+        """Draw Pac-Man with animation and rotation."""
         if inv_timer > 0 and (inv_timer // 4) % 2 == 0:
             return
 
@@ -194,6 +207,7 @@ class ActorRenderer(BaseRenderer):
         self.screen.blit(spr, (fx, fy))
 
     def draw_ghost(self, g: Any, mx: int, my: int, c_s: int) -> None:
+        """Draw a ghost based on its current state and direction."""
         gx, gy = g.get_position()
         ox, oy = 0.0, 0.0
 
@@ -234,6 +248,7 @@ class ActorRenderer(BaseRenderer):
         self.screen.blit(spr, (int(fx), int(fy)))
 
     def draw_death(self, p: Any, mx: int, my: int, c_s: int, t: int) -> bool:
+        """Draw the death animation for Pac-Man."""
         ouv = (60 - t) * 6
         px, py = p.get_position()
         cx = int(px * c_s + mx + c_s // 2)
@@ -251,8 +266,10 @@ class ActorRenderer(BaseRenderer):
 
 
 class UIRenderer(BaseRenderer):
+    """Handles rendering of HUD, menus, and text overlays."""
 
     def __init__(self, screen: pygame.Surface, assets: AssetManager) -> None:
+        """Initialize UI renderer and load fonts."""
         super().__init__(screen, assets)
         path = "assets/PressStart2P.ttf"
         try:
@@ -274,6 +291,7 @@ class UIRenderer(BaseRenderer):
         self, engine: Any, win_w: int, footer_h: int,
         game_state: Any, countdown: int, timer: int
     ) -> None:
+        """Draw HUD and banners based on the current game state."""
         self.draw_hud(engine, win_w, footer_h)
         if game_state.name == "COUNTDOWN":
             banner = "ready" if countdown > 0 else "go"
@@ -282,6 +300,7 @@ class UIRenderer(BaseRenderer):
             self.draw_banner("game_over", win_w, 0)
 
     def draw_hud(self, engine: Any, window_w: int, footer_h: int) -> None:
+        """Draw the heads-up display (score, time, lives)."""
         f_y = self.screen.get_height() - footer_h + 10
         sec = max(0, int(engine.time_left))
         t_col = (255, 255, 255)
@@ -317,6 +336,7 @@ class UIRenderer(BaseRenderer):
             curr_x += surf.get_width() + sp
 
     def draw_banner(self, name: str, window_w: int, timer: int) -> None:
+        """Draw a central banner image or text overlay."""
         img = self.assets.banners.get(name)
         progress = (60 - timer) / 60.0
 
@@ -350,6 +370,7 @@ class UIRenderer(BaseRenderer):
             self.screen.blit(surf, (x, int(y + offset_y)))
 
     def draw_menu(self, window_w: int, window_h: int, sel: int) -> None:
+        """Draw the main menu screen."""
         if self.assets.menu_bg:
             self.screen.blit(self.assets.menu_bg, (0, 0))
         else:
@@ -416,6 +437,7 @@ class UIRenderer(BaseRenderer):
     def draw_highscores(
         self, win_w: int, win_h: int, scores: List[Any]
     ) -> None:
+        """Draw the highscores screen."""
         if self.assets.menu_bg:
             self.screen.blit(self.assets.menu_bg, (0, 0))
         else:
@@ -473,6 +495,7 @@ class UIRenderer(BaseRenderer):
     def draw_pause(
         self, win_w: int, win_h: int, sel: int, confirm: bool
     ) -> None:
+        """Draw the pause menu or exit confirmation."""
         ov = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         ov.fill((0, 0, 0, 180))
         self.screen.blit(ov, (0, 0))
@@ -498,6 +521,7 @@ class UIRenderer(BaseRenderer):
             self.screen.blit(txt, (x, y))
 
     def draw_instructions(self, window_w: int, window_h: int) -> None:
+        """Draw the instructions screen."""
         if self.assets.menu_bg:
             self.screen.blit(self.assets.menu_bg, (0, 0))
         else:
@@ -563,6 +587,7 @@ class UIRenderer(BaseRenderer):
     def draw_enter_name(
         self, window_w: int, window_h: int, name: str, score: int
     ) -> None:
+        """Draw the name entry screen for highscores."""
         self.screen.fill((0, 0, 0))
 
         t1 = self.f_xl.render("Save Your Score", True, (255, 50, 50))
@@ -588,6 +613,7 @@ class UIRenderer(BaseRenderer):
         self.screen.blit(t5, ((window_w - t5.get_width()) // 2, y5))
 
     def draw_cheats_overlay(self, cheats: Dict[str, bool]) -> None:
+        """Draw the cheat codes status overlay."""
         ov = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         ov.fill((0, 0, 0, 180))
         self.screen.blit(ov, (0, 0))

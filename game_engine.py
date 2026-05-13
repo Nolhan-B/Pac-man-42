@@ -7,7 +7,10 @@ from player import Player
 
 
 class Engine():
+    """Core game engine managing logic, actors, and level progression."""
+
     def __init__(self, level_id: int, config: ConfigLoader, player: Player):
+        """Initialize the game engine with config, level, and player."""
         self.level_id: int = level_id
         self.config: ConfigLoader = config
         self.player: Player = player
@@ -30,6 +33,7 @@ class Engine():
         self.game_completed: bool = False
 
     def start_level_timer(self) -> None:
+        """Initialize and start the countdown timer for the current level."""
         # assert self.current_level is not None
         # time_per_tile = 1.6
         # area = self.current_level.width * self.current_level.height
@@ -37,6 +41,7 @@ class Engine():
         self.time_left = self.level_time_limit
 
     def load_level(self, level_id: int) -> None:
+        """Load a specific level by its ID and place actors."""
         self.current_level = Level(level_id, self.config)
         assert self.current_level is not None
         size_x = self.current_level.width
@@ -47,7 +52,7 @@ class Engine():
         self.start_level_timer()
 
     def _init_player_pos(self, size_x: int, size_y: int) -> tuple[int, int]:
-        """Trouve la case libre la plus proche du centre géométrique."""
+        """Find the closest free tile to the geometric center for spawning."""
         if self.current_level is None:
             return (size_x // 2, size_y // 2)
 
@@ -68,6 +73,7 @@ class Engine():
         return best_pos
 
     def next_level(self) -> None:
+        """Advance to the next level or trigger game completion."""
         self.level_id += 1
         if self.level_id < len(self.config.levels):
             print(f"Now going for level {self.level_id + 1}...")
@@ -78,6 +84,7 @@ class Engine():
             self.game_completed = True
 
     def _spawn_ghosts(self) -> None:
+        """Spawn the four ghosts in their respective starting corners."""
         assert self.current_level is not None
         w = self.current_level.width
         h = self.current_level.height
@@ -88,6 +95,7 @@ class Engine():
         self.ghosts.append(Ghost("yellow", h - 1, w - 1, self, (w - 1, h - 1)))
 
     def _get_visual_pos_player(self) -> tuple[float, float]:
+        """Calculate the visual pixel position of the player."""
         px = self.player.get_pos_x()
         py = self.player.get_pos_y()
         if px is None:
@@ -111,6 +119,7 @@ class Engine():
                 self.c_s // 2, py * self.c_s + offset_y + self.c_s // 2)
 
     def _get_visual_pos_ghost(self, ghost: "Ghost") -> tuple[float, float]:
+        """Calculate the visual pixel position of a ghost."""
         # calcule la position visuelle du ghost en pixels (sans offset maze)
         gx = ghost.pos_x
         gy = ghost.pos_y
@@ -133,6 +142,7 @@ class Engine():
                 self.c_s // 2, gy * self.c_s + offset_y + self.c_s // 2)
 
     def take_pac_gum(self) -> None:
+        """Check and process pac-gum consumption at the player's position."""
         px = self.player.get_pos_x()
         py = self.player.get_pos_y()
 
@@ -158,6 +168,7 @@ class Engine():
         self._process_gum(type_gum)
 
     def _process_gum(self, type_gum: str) -> None:
+        """Update score and game state based on the type of gum eaten."""
         assert self.current_level is not None
         if type_gum == "SUPER":
             self.player.add_score(self.config.points_per_super_pacgum)
@@ -173,6 +184,7 @@ class Engine():
             return
 
     def _check_win(self) -> None:
+        """Check if all pac-gums are eaten to trigger level or game win."""
         assert self.current_level is not None
         if self.current_level.total_gum == 0:
             print(f"Level {self.level_id + 1} ended!")
@@ -184,11 +196,13 @@ class Engine():
                 self.level_completed = True
 
     def _check_loose(self) -> None:
+        """Check if the player has lost all lives and end the game."""
         if self.player.lives <= 0:
             print("Game Over...")
             self.running = False
 
     def _check_collisions(self) -> None:
+        """Check for collisions between the player and any ghosts."""
         if self.invincibility_timer > 0:
             return
 
@@ -210,6 +224,7 @@ class Engine():
                 self._handle_collision(ghost)
 
     def _handle_collision(self, ghost: "Ghost") -> None:
+        """Handle the outcome of a collision based on ghost state."""
         if self.cheat_invincible is False:
             if ghost._state == State.CHASE:
                 if self.invincibility_timer <= 0 and not self.dying:
@@ -223,6 +238,7 @@ class Engine():
             ghost.set_state(State.DEAD)
 
     def run(self) -> None:
+        """Main logic update loop called every frame."""
         if not self.running or self.is_paused:
             return
         assert self.current_level is not None

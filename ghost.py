@@ -1,4 +1,3 @@
-
 from typing import TYPE_CHECKING
 import random
 from constants import Direction, State, OPPOSITES
@@ -8,8 +7,11 @@ if TYPE_CHECKING:
 
 
 class Ghost():
+    """Represents a ghost enemy with specific AI states and movement."""
+
     def __init__(self, color: str, pos_y: int, pos_x: int,
                  engine: "Engine", spawn: tuple[int, int]):
+        """Initialize the ghost with its color, position, and spawn point."""
         self.color = color
         self._spawn = spawn
         self.pos_y = pos_y
@@ -25,6 +27,7 @@ class Ghost():
         self.pos_history: list[tuple[int, int]] = []
 
     def set_state(self, new_state: State) -> None:
+        """Update the ghost's behavioral state and timer if frightened."""
         if new_state == State.FRIGHTENED and self._state == State.DEAD:
             return
         if new_state == State.FRIGHTENED:
@@ -32,9 +35,11 @@ class Ghost():
         self._state = new_state
 
     def get_position(self) -> tuple[int, int]:
+        """Return the current grid coordinates of the ghost."""
         return (self.pos_x, self.pos_y)
 
     def force_u_turn(self) -> None:
+        """Force the ghost to smoothly reverse direction when frightened."""
         # On inverse la direction actuelle de manière fluide
         if self.direction in OPPOSITES:
             if self.direction == Direction.NORTH:
@@ -55,6 +60,7 @@ class Ghost():
         self.set_state(State.FRIGHTENED)
 
     def move(self, layout: list[list[int]]) -> None:
+        """Calculate and execute the next move based on current state."""
         possible = []
         possible = self._get_possible_direction(layout)
 
@@ -95,6 +101,7 @@ class Ghost():
 
     @property
     def current_speed(self) -> float:
+        """Return the effective speed modifier based on current state."""
         if self._state == State.FRIGHTENED:
             return self.speed * 0.5
         if self._state == State.DEAD:
@@ -103,6 +110,7 @@ class Ghost():
 
     def _get_possible_direction(self,
                                 layout: list[list[int]]) -> list[Direction]:
+        """Find all valid movement directions from the current cell."""
         pos_x, pos_y = self.pos_x, self.pos_y
         val = layout[pos_y][pos_x]
         possible = []
@@ -133,6 +141,7 @@ class Ghost():
         return possible
 
     def _chase_pac_man(self, possible: list[Direction]) -> Direction:
+        """Determine the next step to hunt down Pac-Man."""
         if random.random() < 0.35:
             return random.choice(possible)
         target: tuple[int, int] = self.engine.player.get_position()
@@ -140,6 +149,7 @@ class Ghost():
         return move
 
     def _run_from_pac_man(self, possible: list[Direction]) -> Direction:
+        """Determine the next step to escape from Pac-Man."""
         target: tuple[int, int] = self.engine.player.get_position()
         best_distance = -1.0  # On cherche le maximum donc on part de bas
         best_direction: Direction = possible[0]
@@ -164,6 +174,7 @@ class Ghost():
         return best_direction
 
     def _respawn(self, possible: list[Direction]) -> Direction:
+        """Determine the path back to the ghost's spawn point."""
         target: tuple[int, int] = self._spawn
         if random.random() < 0.35:
             return random.choice(possible)
@@ -172,6 +183,7 @@ class Ghost():
 
     def _get_direction(self, target: tuple[int, int],
                        possible: list[Direction]) -> Direction:
+        """Evaluate the best direction to reach a given target coordinate."""
         best_distance = float('inf')
         best_direction = possible[0]  # Valeur par défaut
 
@@ -205,12 +217,14 @@ class Ghost():
         return best_direction
 
     def _state_timer(self) -> None:
+        """Handle countdowns for temporary states like FRIGHTENED."""
         if self._state == State.FRIGHTENED:
             self.frightened_timer -= 1
             if self.frightened_timer <= 0:
                 self.set_state(State.CHASE)
 
     def ghost_update(self) -> None:
+        """Update ghost movement timers and execute steps if needed."""
         self.move_timer += self.current_speed
         time_to_move = 30.0
         self._state_timer()

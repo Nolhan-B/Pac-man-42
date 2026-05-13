@@ -16,10 +16,13 @@ import math
 
 
 class Level:
+    """Represents a game level, managing the maze layout and pac-gums."""
+
     PACGUM = 16
     SUPER_PACGUM = 32
 
     def __init__(self, level_id: int, config: ConfigLoader):
+        """Initialize the level, generate the maze, and place pac-gums."""
         self.level_id = level_id
         self.total_gum: int = 0
         self.generator: MazeGenerator = self._init_generator(level_id, config)
@@ -34,12 +37,14 @@ class Level:
 
     def _init_generator(self, level_id: int,
                         config: ConfigLoader) -> MazeGenerator:
+        """Initialize the external maze generator with proper settings."""
         level_data = config.levels[level_id]
         size: tuple[int, int] = (level_data["width"], level_data["height"])
         seed = config.seed if level_id == 0 else random.randint(0, 99999999999)
         return MazeGenerator(size=size, seed=seed)
 
     def _init_put_gum(self) -> None:
+        """Populate the maze with normal and super pac-gums."""
         # 4 coin
         c1 = (0, 0)
         c2 = (self.width - 1, 0)
@@ -65,6 +70,7 @@ class Level:
                     self.total_gum += 1
 
     def check_and_eat_gum(self, player_y: float, player_x: float) -> str:
+        """Check for and consume a pac-gum near the player's position."""
         ix = int(round(player_x))
         iy = int(round(player_y))
 

@@ -11,6 +11,7 @@ from renderer import Renderer
 
 
 def _reset_game(config: ConfigLoader) -> tuple[Player, Engine]:
+    """Reinitialize the player and engine to start a new game session."""
     player = Player(config)
     engine = Engine(0, config, player)
     engine.load_level(0)
@@ -18,6 +19,7 @@ def _reset_game(config: ConfigLoader) -> tuple[Player, Engine]:
 
 
 def main() -> None:
+    """Initialize Pygame, manage game states, and run the main event loop."""
     if len(sys.argv) != 2:
         print("Usage: python3 pac-man.py <config_file.json>")
         raise SystemExit(1)
@@ -303,6 +305,7 @@ def main() -> None:
         elif game_state == GameState.HIGHSCORES:
             renderer.draw_highscores(win_w, win_h, highscore_manager.scores)
 
+        pygame.display.flip()
         clock.tick(60)
 
 
@@ -310,4 +313,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("Ctrl+C Detected !\nGood bye!")
+        print("Ctrl+C Detected !\\nGood bye!")
