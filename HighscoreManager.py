@@ -35,15 +35,20 @@ class HighscoreManager:
         try:
             with open(self.filepath, 'r', encoding="utf-8") as f:
                 data = json.load(f)
-                try:
+
+                if isinstance(data, list):
                     for e in data:
-                        self.scores.append(PlayerScore(e["name"], e["score"]))
-                except (KeyError, ValueError, TypeError):
-                    logger.warning(f"Score with value {e["name"]} / "
-                                   f"{e["score"]} is"
-                                   " not valid and will not be used "
-                                   "for highscores")
-                self.scores = sorted(self.scores, key=lambda e: e.score,
+                        try:
+                            # On essaie d'ajouter le score
+                            self.scores.append(PlayerScore(e["name"],
+                                                           e["score"]))
+                        except (KeyError, ValueError, TypeError) as err:
+                            logger.warning(
+                                f"Score entry {e} is not valid and "
+                                "will be ignored. "
+                                f"Reason: {err}"
+                            )
+                self.scores = sorted(self.scores, key=lambda s: s.score,
                                      reverse=True)[:10]
         except FileNotFoundError:
             logger.warning(f"Filepath {self.filepath} not found")
@@ -53,8 +58,8 @@ class HighscoreManager:
             logger.warning("Suppressing file content for safety...")
             try:
                 open(self.filepath, 'w').close()
-            except (PermissionError, OSError) as e:
-                logger.warning(f"Can not empty {self.filepath} : {e}")
+            except (PermissionError, OSError) as exc:
+                logger.warning(f"Can not empty {self.filepath} : {exc}")
             finally:
                 self.scores = []
 

@@ -176,9 +176,15 @@ def main() -> None:
 
                 elif game_state == GameState.ENTER_NAME:
                     if event.key == pygame.K_RETURN and len(player_name) > 0:
-                        ps = PlayerScore(player_name, player.score)
-                        highscore_manager.add_score(ps)
-                        game_state = GameState.HIGHSCORES
+                        try:
+                            ps = PlayerScore(player_name, player.score)
+                            highscore_manager.add_score(ps)
+                            game_state = GameState.HIGHSCORES
+                        except ValueError as e:
+                            print(e)
+                        finally:
+                            game_state = GameState.MENU
+
                     elif event.key == pygame.K_BACKSPACE:
                         player_name = player_name[:-1]
                     elif len(player_name) < 10:

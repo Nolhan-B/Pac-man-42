@@ -17,10 +17,6 @@ class Player:
         self.speed: float = 20.0
         self.spawn: None | tuple[int, int] = None
 
-    def _init_player_pos(self, maze_size_x: int, maze_size_y: int) -> None:
-        self._pos_x = maze_size_x // 2
-        self._pos_y = maze_size_y // 2
-
     def update_speed(self, value: float) -> None:
         if value <= 0:
             logger.warning("Can not update player's speed, "

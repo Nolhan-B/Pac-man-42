@@ -39,11 +39,33 @@ class Engine():
     def load_level(self, level_id: int) -> None:
         self.current_level = Level(level_id, self.config)
         assert self.current_level is not None
-        mid_x = self.current_level.width // 2
-        mid_y = self.current_level.height // 2
+        size_x = self.current_level.width
+        size_y = self.current_level.height
+        mid_x, mid_y = self._init_player_pos(size_x, size_y)
         self.player.set_position(mid_x, mid_y)
         self._spawn_ghosts()
         self.start_level_timer()
+
+    def _init_player_pos(self, size_x: int, size_y: int) -> tuple[int, int]:
+        """Trouve la case libre la plus proche du centre géométrique."""
+        if self.current_level is None:
+            return (size_x // 2, size_y // 2)
+
+        mid_x = size_x // 2
+        mid_y = size_y // 2
+        layout = self.current_level.layout
+        best_pos = (mid_x, mid_y)
+        min_dist = float('inf')
+
+        for y in range(self.current_level.height):
+            for x in range(self.current_level.width):
+                # cases qui ne sont pas des mur plein(val != 15)
+                if (layout[y][x] & 15) != 15:
+                    dist = float(abs(x - mid_x) + abs(y - mid_y))
+                    if dist < min_dist:
+                        min_dist = dist
+                        best_pos = (x, y)
+        return best_pos
 
     def next_level(self) -> None:
         self.level_id += 1
@@ -218,10 +240,11 @@ class Engine():
             self.death_animation_timer -= 1
             if self.death_animation_timer <= 0:
                 # animation fini on respawn
-                mid_x = self.current_level.width // 2
-                mid_y = self.current_level.height // 2
+                size_x = self.current_level.width
+                size_y = self.current_level.height
                 self.player.current_direction = None
                 self.player.next_direction = None
+                mid_x, mid_y = self._init_player_pos(size_x, size_y)
                 self.player.set_position(mid_x, mid_y)
                 self._spawn_ghosts()
                 self.invincibility_timer = 90

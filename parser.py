@@ -207,21 +207,6 @@ class ConfigLoader:
             int, 5, 19, f"levels[{index}].height", default_level["height"]
         )
 
-        # pour eviter les erreurs faut que les dimensions du labyrinthe
-        # soit impair, donc on ajuste si besoin.
-        if width % 2 == 0:
-            width += 1
-            logger.warning(
-                "Config : levels[%d].width must be odd, ajusted to %d.",
-                index, width
-            )
-        if height % 2 == 0:
-            height += 1
-            logger.warning(
-                "Config : levels[%d].height must be odd, ajusted to %d.",
-                index, height
-            )
-
         return {"width": width, "height": height}
 
     # a refactorer plus tard avec une vraie classe LevelConfig
