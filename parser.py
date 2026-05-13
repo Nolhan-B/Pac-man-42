@@ -20,18 +20,14 @@ DEFAULTS: dict[str, Any] = {
 
 
 class ConfigLoader:
-    """Charge et valide le fichier de config JSON du jeu.
+    """Load and validate the game's JSON configuration file.
 
-    Gere les commentaires '#', les valeurs manquantes ou invalides,
-    et les cles inconnues, sans jamais planter.
-
-    Example:
-        loader = ConfigLoader("config.json")
-        loader.load()
-        lives = loader.lives
+    Handles '#' comments, missing or invalid values, and unknown
+    keys automatically without crashing.
     """
 
     def __init__(self, filepath: str) -> None:
+        """Initialize the loader and set default configuration values."""
         self.filepath = filepath
         # les attributs sont initialises avec les defauts,
         # puis ecrases par load() si le fichier est valide
@@ -45,15 +41,16 @@ class ConfigLoader:
         self.levels: list[dict[str, Any]] = list(DEFAULTS["levels"])
 
     def load(self) -> None:
-        """Point d'entree principal, appelle les etapes dans l'ordre."""
+        """Main entry point: read, clean, parse, and validate the config."""
         raw_content = self._read_file()
         clean_content = self._strip_comments(raw_content)
         raw_config = self._parse_json(clean_content)
         self._validate(raw_config)
 
-    # --- Etape 1 : lecture du fichier ---
+    # --- lecture du fichier ---
 
     def _read_file(self) -> str:
+        """Read the raw configuration file from disk."""
         # Lit le fichier et retourne son contenu brut.
         # Si le fichier existe pas ou est illisible, on exit proprement.
         try:
@@ -69,6 +66,7 @@ class ConfigLoader:
     # del des commentaires dans les json
 
     def _strip_comments(self, raw: str) -> str:
+        """Remove all lines starting with '#' to allow JSON parsing."""
         # le JSON supporte pas les commentaires donc on les vire avant
         # on passe ligne par ligne et si ca commence par # on skip.
         lines = []
@@ -80,6 +78,7 @@ class ConfigLoader:
     # parsing json
 
     def _parse_json(self, content: str) -> dict[str, Any]:
+        """Parse the cleaned string into a JSON dictionary object."""
         try:
             raw = json.loads(content)
         except json.JSONDecodeError as e:
@@ -103,6 +102,7 @@ class ConfigLoader:
     # validation cle par cle
 
     def _validate(self, raw: dict[str, Any]) -> None:
+        """Validate all keys and fall back to safe defaults if needed."""
         # on valide chaque cle connue et on assigne direct sur self
         # les cles inconnues sont ignorees automatiquement
         self.highscore_filename = self._clamp(
@@ -125,8 +125,11 @@ class ConfigLoader:
             raw_lives, int, 1, 10, "lives", DEFAULTS["lives"]
         )
         self.points_per_pacgum = self._clamp(
-            self._get(raw, "points_per_pacgum", DEFAULTS["points_per_pacgum"]),
-            int, 0, 10000, "points_per_pacgum", DEFAULTS["points_per_pacgum"]
+            self._get(
+                raw, "points_per_pacgum", DEFAULTS["points_per_pacgum"]
+            ),
+            int, 0, 10000,
+            "points_per_pacgum", DEFAULTS["points_per_pacgum"]
         )
         self.points_per_super_pacgum = self._clamp(
             self._get(
@@ -138,16 +141,22 @@ class ConfigLoader:
             "points_per_super_pacgum", DEFAULTS["points_per_super_pacgum"]
         )
         self.points_per_ghost = self._clamp(
-            self._get(raw, "points_per_ghost", DEFAULTS["points_per_ghost"]),
-            int, 0, 10000, "points_per_ghost", DEFAULTS["points_per_ghost"]
+            self._get(
+                raw, "points_per_ghost", DEFAULTS["points_per_ghost"]
+            ),
+            int, 0, 10000,
+            "points_per_ghost", DEFAULTS["points_per_ghost"]
         )
         self.seed = self._clamp(
             self._get(raw, "seed", DEFAULTS["seed"]),
             int, 0, 2**32 - 1, "seed", DEFAULTS["seed"]
         )
         self.level_max_time = self._clamp(
-            self._get(raw, "level_max_time", DEFAULTS["level_max_time"]),
-            int, 10, 600, "level_max_time", DEFAULTS["level_max_time"]
+            self._get(
+                raw, "level_max_time", DEFAULTS["level_max_time"]
+            ),
+            int, 10, 600,
+            "level_max_time", DEFAULTS["level_max_time"]
         )
         self.levels = self._parse_levels(raw.get("levels"))
 
@@ -162,12 +171,14 @@ class ConfigLoader:
         key: str,
         default: Any
     ) -> Any:
+        """Ensure a value matches the expected type and falls within bounds."""
         # check que la valeur soit du bon type et dans les bornes.
         # si c'est invalide, on log un warning et on retourne le defaut.
         if not isinstance(value, expected_type):
             logger.warning(
                 "Config '%s' : expected %s, got %s. Default: %s",
-                key, expected_type.__name__, type(value).__name__, default
+                key, expected_type.__name__,
+                type(value).__name__, default
             )
             return default
 
@@ -188,6 +199,7 @@ class ConfigLoader:
         return value
 
     def _parse_level(self, raw_level: Any, index: int) -> dict[str, Any]:
+        """Parse and validate width and height parameters for a level."""
         # valide un niveau individuel (width + height).
         # si c'est pas un dict, on retourne le niveau par defaut.
         default_level = DEFAULTS["levels"][0]
@@ -211,6 +223,7 @@ class ConfigLoader:
 
     # a refactorer plus tard avec une vraie classe LevelConfig
     def _parse_levels(self, raw: Any) -> list[dict[str, Any]]:
+        """Parse the list of levels, generating missing ones if needed."""
         # parse la liste des levels, le sujet en demande 10,
         # donc si c'est trop court on complete avec
         #  le niveau par defaut.
@@ -219,8 +232,8 @@ class ConfigLoader:
 
         if not isinstance(raw, list) or len(raw) == 0:
             logger.warning(
-                "Config : 'levels' missign or invalid, "
-                "%d defaut levels generated.", min_levels
+                "Config : 'levels' missing or invalid, "
+                "%d default levels generated.", min_levels
             )
             return [dict(default_level) for _ in range(min_levels)]
 
@@ -236,6 +249,7 @@ class ConfigLoader:
         return levels
 
     def _get(self, raw: dict[str, Any], key: str, default: Any) -> Any:
+        """Safely retrieve a key from the dictionary or return a default."""
         if key not in raw:
             logger.warning(
                 "Config : key '%s' not found, using default: %s", key, default

@@ -6,7 +6,10 @@ logger = logging.getLogger(__name__)
 
 
 class Player:
+    """Represents the player character (Pac-Man) and its logic."""
+
     def __init__(self, config: ConfigLoader) -> None:
+        """Initialize the player with config values."""
         self.lives = config.lives
         self._pos_x: int = 0
         self._pos_y: int = 0
@@ -18,6 +21,7 @@ class Player:
         self.spawn: None | tuple[int, int] = None
 
     def update_speed(self, value: float) -> None:
+        """Safely update the player's movement speed modifier."""
         if value <= 0:
             logger.warning("Can not update player's speed, "
                            "Value must be > 0 !")
@@ -25,38 +29,48 @@ class Player:
             self.speed = value
 
     def set_default_speed(self) -> None:
+        """Reset the player's speed to its default value."""
         self.speed = 20.0
 
     def move_up(self) -> None:
+        """Move the player one tile North."""
         self.current_direction = Direction.NORTH
         self._pos_y -= 1
 
     def move_down(self) -> None:
+        """Move the player one tile South."""
         self.current_direction = Direction.SOUTH
         self._pos_y += 1
 
     def move_right(self) -> None:
+        """Move the player one tile East."""
         self.current_direction = Direction.EAST
         self._pos_x += 1
 
     def move_left(self) -> None:
+        """Move the player one tile West."""
         self.current_direction = Direction.WEST
         self._pos_x -= 1
 
     def set_position(self, x: int, y: int) -> None:
+        """Force the player's coordinates to a specific tile."""
         self._pos_x = x
         self._pos_y = y
 
     def get_position(self) -> tuple[int, int]:
+        """Return the current (x, y) grid coordinates."""
         return (self._pos_x, self._pos_y)
 
     def get_pos_x(self) -> int:
+        """Return the current x grid coordinate."""
         return self._pos_x
 
     def get_pos_y(self) -> int:
+        """Return the current y grid coordinate."""
         return self._pos_y
 
     def lose_life(self) -> None:
+        """Decrement the player's life count safely."""
         if self.lives == 0:
             logger.warning("Player can't lose life, already at 0 !")
         else:
@@ -64,12 +78,15 @@ class Player:
             self.lives -= 1
 
     def set_next_direction(self, direction: Direction) -> None:
+        """Buffer the next desired movement direction."""
         self.next_direction = direction
 
     def add_score(self, amount: int) -> None:
+        """Add the given amount to the player's total score."""
         self.score += amount
 
     def _execute_move(self) -> None:
+        """Apply the current direction to update grid coordinates."""
         if self.current_direction == Direction.NORTH:
             self.move_up()
         elif self.current_direction == Direction.SOUTH:
@@ -81,7 +98,7 @@ class Player:
 
     def _can_move(self, direction: Direction,
                   layout: List[List[int]]) -> bool:
-
+        """Check if movement in the given direction is possible."""
         pos_x, pos_y = self._pos_x, self._pos_y
         val = layout[pos_y][pos_x]
 
@@ -104,6 +121,7 @@ class Player:
         return False
 
     def update_player(self, layout: list[list[int]]) -> None:
+        """Update movement timers and handle direction changes."""
         if self.current_direction and (
             self.next_direction == OPPOSITES.get(self.current_direction)
         ):

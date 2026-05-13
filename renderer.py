@@ -7,7 +7,10 @@ from HighscoreManager import PlayerScore
 
 
 class Renderer:
+    """Orchestrates all rendering operations for the game."""
+
     def __init__(self, screen: pygame.Surface) -> None:
+        """Initialize the renderer with sub-renderers and load assets."""
         self.screen = screen
         self.assets = AssetManager()
         self.assets.load_all(self.screen.get_size())
@@ -21,6 +24,7 @@ class Renderer:
         self.c_s: int = 0
 
     def _get_layout_params(self, engine: Any) -> Tuple[int, int, int]:
+        """Calculate maze offsets and cell size to center it on screen."""
         win_w = self.screen.get_width()
         win_h = self.screen.get_height()
         avail_h = win_h - self.header - self.footer
@@ -36,7 +40,7 @@ class Renderer:
     def draw_game(self, engine: Any, game_state: GameState, countdown: int,
                   timer: int, show_cheats: bool,
                   cheats: Optional[Dict[str, bool]] = None) -> None:
-
+        """Draw the active game view including maze, actors, HUD & banners."""
         if self.assets.game_bg:
             self.screen.blit(self.assets.game_bg, (0, 0))
         else:
@@ -65,24 +69,29 @@ class Renderer:
         pygame.display.flip()
 
     def draw_menu(self, win_w: int, win_h: int, selection: int) -> None:
+        """Delegate drawing of the main menu screen."""
         self.ui_p.draw_menu(win_w, win_h, selection)
         pygame.display.flip()
 
     def draw_pause(self, win_w: int, win_h: int, selection: int,
                    confirm: bool) -> None:
+        """Delegate drawing of the pause menu or confirmation prompt."""
         self.ui_p.draw_pause(win_w, win_h, selection, confirm)
         pygame.display.flip()
 
     def draw_highscores(self, win_w: int, win_h: int,
                         scores: list[PlayerScore]) -> None:
+        """Delegate drawing of the high scores leaderboard."""
         self.ui_p.draw_highscores(win_w, win_h, scores)
         pygame.display.flip()
 
     def draw_instructions(self, win_w: int, win_h: int) -> None:
+        """Delegate drawing of the game instructions screen."""
         self.ui_p.draw_instructions(win_w, win_h)
         pygame.display.flip()
 
     def draw_enter_name(self, win_w: int, win_h: int, name: str,
                         score: int) -> None:
+        """Delegate drawing of the score saving input screen."""
         self.ui_p.draw_enter_name(win_w, win_h, name, score)
         pygame.display.flip()
