@@ -61,3 +61,7 @@ The development cycle was driven by a structured Agile approach to track feature
 
 All evidence of project tracking, including Gantt charts, risk analysis, acceptance testing plans, and daily progress logs, can be found in the dedicated directory:
 [Link to the Project Management Directory](./project_management/)
+
+## Link to Itch.io 
+https://nbarbosa.itch.io/pac-man
+mdp: 42
