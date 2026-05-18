@@ -45,7 +45,7 @@ lint-strict:
 
 package:
 	@echo "$(GREEN)Building executable with PyInstaller...$(RESET)"
-	pyinstaller --onefile --noconsole pac-man.py
+	$(VENV)/bin/pyinstaller --onefile --noconsole pac-man.py
 	@echo "$(GREEN)Preparing release folder...$(RESET)"
 	@rm -rf pacman_release pacman_release.zip
 	@mkdir -p pacman_release
