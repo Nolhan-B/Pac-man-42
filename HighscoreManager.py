@@ -15,7 +15,9 @@ class PlayerScore:
         """Validate name length, alphanumeric characters, and score value."""
         if not all(c.isalnum() or c == ' ' for c in self.name):
             raise ValueError("PlayerScore's name can't contain"
-                             " non-alnum characters!")
+                             " non-alnum characters :"
+                             f" name '{self.name}' is not valid, "
+                             "score was not saved.")
         if len(self.name) > 10:
             logger.warning(f"PlayerScore name {self.name} is too long !"
                            f"Name in use is now {self.name[:10]}")

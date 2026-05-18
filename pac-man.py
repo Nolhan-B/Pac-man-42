@@ -190,7 +190,6 @@ def main() -> None:
                             game_state = GameState.HIGHSCORES
                         except ValueError as e:
                             print(e)
-                        finally:
                             game_state = GameState.MENU
 
                     elif event.key == pygame.K_BACKSPACE:
