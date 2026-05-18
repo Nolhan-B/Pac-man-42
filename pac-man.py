@@ -180,9 +180,12 @@ def main() -> None:
                         game_state = GameState.ENTER_NAME
 
                 elif game_state == GameState.ENTER_NAME:
-                    if event.key == pygame.K_RETURN and len(player_name) > 0:
+                    if (
+                        event.key == pygame.K_RETURN and
+                        len(player_name.strip()) >= 3
+                    ):
                         try:
-                            ps = PlayerScore(player_name, player.score)
+                            ps = PlayerScore(player_name.strip(), player.score)
                             highscore_manager.add_score(ps)
                             game_state = GameState.HIGHSCORES
                         except ValueError as e:
