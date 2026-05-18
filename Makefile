@@ -30,7 +30,7 @@ debug:
 clean:
 	@echo "$(GREEN)Cleaning temporary files...$(RESET)"
 	rm -rf __pycache__ .mypy_cache
-	rm -rf build dist pac-man.spec
+	rm -rf build dist
 	rm -rf pacman_release pacman_release.zip
 
 lint:
