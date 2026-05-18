@@ -57,11 +57,17 @@ class ConfigLoader:
             with open(self.filepath, "r", encoding="utf-8") as f:
                 return f.read()
         except FileNotFoundError:
-            print(f"Error : file '{self.filepath}' not found")
-            raise SystemExit(1)
+            logger.warning(
+                "Config file '%s' not found! Using fallback defaults.",
+                self.filepath
+            )
+            return "{}"
         except OSError as e:
-            print(f"Error: Can not read '{self.filepath}' : {e}")
-            raise SystemExit(1)
+            logger.warning(
+                "Can not read '%s' (%s). Using fallback defaults.",
+                self.filepath, e
+            )
+            return "{}"
 
     # del des commentaires dans les json
 
