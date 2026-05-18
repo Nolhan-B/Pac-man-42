@@ -500,7 +500,7 @@ class UIRenderer(BaseRenderer):
         ov.fill((0, 0, 0, 180))
         self.screen.blit(ov, (0, 0))
 
-        msg = "Exit game?" if confirm else "PAUSED"
+        msg = "Exit game? progress will be lost." if confirm else "PAUSED"
         opts = (
             ["Yes, exit", "No, go back"] if confirm
             else ["Resume", "Exit to menu"]

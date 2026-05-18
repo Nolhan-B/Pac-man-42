@@ -30,7 +30,7 @@ def main() -> None:
     config = ConfigLoader(config_file)
     config.load()
 
-    C_S = 42
+    C_S = 90
     max_w = max(lvl["width"] for lvl in config.levels)
     max_h = max(lvl["height"] for lvl in config.levels)
     WINDOW_W = max_w * C_S + 150
@@ -72,7 +72,30 @@ def main() -> None:
                 sys.exit()
 
             if event.type == pygame.VIDEORESIZE:
-                renderer.assets.load_all((event.w, event.h))
+                if event.w < WINDOW_W or event.h < WINDOW_H:
+                    new_w = max(WINDOW_W, event.w)
+                    new_h = max(WINDOW_H, event.h)
+                    screen = pygame.display.set_mode(
+                        (new_w, new_h),
+                        pygame.RESIZABLE
+                    )
+                else:
+                    new_w, new_h = event.w, event.h
+                    screen = pygame.display.get_surface()
+
+                renderer.screen = screen
+                available_w = new_w - 150
+                available_h = new_h - 225
+                if max_w > 0 and max_h > 0:
+                    C_S = max(1, min(
+                        available_w // max_w,
+                        available_h // max_h
+                        )
+                    )
+
+                renderer.c_s = C_S
+                engine.c_s = C_S
+                renderer.assets.load_all((new_w, new_h))
                 renderer.maze_p.maze_surface = None
 
             if event.type == pygame.KEYDOWN:
