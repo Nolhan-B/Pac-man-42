@@ -1,6 +1,4 @@
 {
-
-    # --- Valid config ---
     "highscore_filename": "highscores.json",
     "lives": 3,
     "points_per_pacgum": 10,
